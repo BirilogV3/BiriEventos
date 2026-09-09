@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Acesso ao sistema de controle de materiais e eventos da Birivet.">
+  <meta name="theme-color" content="#0f172a">
+
+  <title>BiriEventos - Login</title>
+
+  <link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>"
+  >
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --azul-950: #0f172a;
+      --azul-900: #172554;
+      --azul-800: #1e3a8a;
+      --azul-600: #2563eb;
+      --azul-500: #3b82f6;
+      --cinza-50: #f8fafc;
+      --cinza-100: #f1f5f9;
+      --cinza-200: #e2e8f0;
+      --cinza-400: #94a3b8;
+      --cinza-500: #64748b;
+      --cinza-700: #334155;
+      --cinza-900: #0f172a;
+      --verde-600: #16a34a;
+      --vermelho-50: #fef2f2;
+      --vermelho-200: #fecaca;
+      --vermelho-700: #b91c1c;
+      --branco: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--cinza-900);
+      background:
+        radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.22), transparent 32%),
+        radial-gradient(circle at 85% 85%, rgba(37, 99, 235, 0.15), transparent 30%),
+        linear-gradient(135deg, var(--azul-950), var(--azul-900));
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .pagina-login {
+      width: min(100%, 960px);
+      min-height: 590px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
+      overflow: hidden;
+      background: var(--branco);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 24px;
+      box-shadow: 0 30px 80px rgba(2, 6, 23, 0.42);
+    }
+
+    .apresentacao {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 52px;
+      color: var(--branco);
+      background: linear-gradient(155deg, #0f172a 0%, #172554 54%, #1d4ed8 120%);
+    }
+
+    .apresentacao::before,
+    .apresentacao::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 50%;
+    }
+
+    .apresentacao::before {
+      width: 320px;
+      height: 320px;
+      right: -175px;
+      top: -120px;
+    }
+
+    .apresentacao::after {
+      width: 240px;
+      height: 240px;
+      left: -130px;
+      bottom: -135px;
+    }
+
+    .marca,
+    .texto-apresentacao,
+    .rodape-apresentacao {
+      position: relative;
+      z-index: 1;
+    }
+
+    .marca {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .marca-icone {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      font-size: 26px;
+      backdrop-filter: blur(8px);
+    }
+
+    .marca-nome {
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .marca-versao {
+      margin-top: 2px;
+      color: #bfdbfe;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+
+    .texto-apresentacao h1 {
+      max-width: 410px;
+      margin-bottom: 18px;
+      font-size: clamp(2.1rem, 4vw, 3.25rem);
+      line-height: 1.04;
+      letter-spacing: -0.045em;
+    }
+
+    .texto-apresentacao p {
+      max-width: 400px;
+      color: #dbeafe;
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
+    .rodape-apresentacao {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #bfdbfe;
+      font-size: 0.85rem;
+    }
+
+    .status-online {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 0 5px rgba(74, 222, 128, 0.12);
+    }
+
+    .area-formulario {
+      display: flex;
+      align-items: center;
+      padding: 54px 48px;
+      background: var(--branco);
+    }
+
+    .formulario-login {
+      width: 100%;
+    }
+
+    .cabecalho-formulario {
+      margin-bottom: 30px;
+    }
+
+    .cabecalho-formulario h2 {
+      margin-bottom: 9px;
+      color: var(--cinza-900);
+      font-size: 1.8rem;
+      letter-spacing: -0.025em;
+    }
+
+    .cabecalho-formulario p {
+      color: var(--cinza-500);
+      font-size: 0.96rem;
+      line-height: 1.5;
+    }
+
+    .campo {
+      margin-bottom: 19px;
+    }
+
+    .campo label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--cinza-700);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .entrada-container {
+      position: relative;
+    }
+
+    .entrada-container input {
+      width: 100%;
+      min-height: 50px;
+      padding: 0 48px 0 44px;
+      border: 1px solid var(--cinza-200);
+      border-radius: 12px;
+      outline: none;
+      background: var(--cinza-50);
+      color: var(--cinza-900);
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .entrada-container input:focus {
+      border-color: var(--azul-500);
+      background: var(--branco);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    }
+
+    .entrada-container input::placeholder {
+      color: var(--cinza-400);
+    }
+
+    .entrada-icone {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      color: var(--cinza-500);
+      font-size: 1.05rem;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .mostrar-senha {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 9px;
+      color: var(--cinza-500);
+      background: transparent;
+      cursor: pointer;
+      transform: translateY(-50%);
+      font-size: 1rem;
+    }
+
+    .mostrar-senha:hover,
+    .mostrar-senha:focus-visible {
+      background: var(--cinza-100);
+      color: var(--azul-600);
+      outline: none;
+    }
+
+    .mensagem {
+      display: none;
+      margin-bottom: 18px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .mensagem.erro {
+      display: block;
+      border: 1px solid var(--vermelho-200);
+      color: var(--vermelho-700);
+      background: var(--vermelho-50);
+    }
+
+    .mensagem.sucesso {
+      display: block;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      background: #f0fdf4;
+    }
+
+    .botao-entrar {
+      width: 100%;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 12px;
+      color: var(--branco);
+      background: linear-gradient(135deg, var(--azul-600), var(--azul-800));
+      box-shadow: 0 12px 25px rgba(37, 99, 235, 0.24);
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 800;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+    }
+
+    .botao-entrar:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+    }
+
+    .botao-entrar:focus-visible {
+      outline: 3px solid rgba(59, 130, 246, 0.3);
+      outline-offset: 3px;
+    }
+
+    .botao-entrar:disabled {
+      cursor: wait;
+      opacity: 0.72;
+    }
+
+    .carregando {
+      width: 18px;
+      height: 18px;
+      display: none;
+      border: 2px solid rgba(255, 255, 255, 0.38);
+      border-top-color: var(--branco);
+      border-radius: 50%;
+      animation: girar 0.8s linear infinite;
+    }
+
+    .botao-entrar.processando .carregando {
+      display: inline-block;
+    }
+
+    .seguranca {
+      margin-top: 20px;
+      color: var(--cinza-500);
+      text-align: center;
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    @keyframes girar {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 780px) {
+      body {
+        padding: 0;
+        background: var(--branco);
+      }
+
+      .pagina-login {
+        width: 100%;
+        min-height: 100vh;
+        grid-template-columns: 1fr;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .apresentacao {
+        min-height: 220px;
+        padding: 30px 26px;
+      }
+
+      .texto-apresentacao h1 {
+        margin-top: 36px;
+        font-size: 2rem;
+      }
+
+      .texto-apresentacao p,
+      .rodape-apresentacao {
+        display: none;
+      }
+
+      .area-formulario {
+        align-items: flex-start;
+        padding: 38px 26px 48px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .apresentacao {
+        min-height: 200px;
+      }
+
+      .marca-icone {
+        width: 44px;
+        height: 44px;
+      }
+
+      .marca-nome {
+        font-size: 1.3rem;
+      }
+
+      .texto-apresentacao h1 {
+        margin-top: 28px;
+        font-size: 1.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="pagina-login">
+    <section class="apresentacao" aria-label="Apresentação do BiriEventos">
+      <div class="marca">
+        <div class="marca-icone" aria-hidden="true">📅</div>
+
+        <div>
+          <div class="marca-nome">BiriEventos</div>
+          <div class="marca-versao">SISTEMA V1.0</div>
+        </div>
+      </div>
+
+      <div class="texto-apresentacao">
+        <h1>Materiais certos em cada evento.</h1>
+        <p>
+          Controle reservas, saídas e devoluções dos materiais utilizados nos eventos da Birivet.
+        </p>
+      </div>
+
+      <div class="rodape-apresentacao">
+        <span class="status-online" aria-hidden="true"></span>
+        Ambiente seguro e conectado
+      </div>
+    </section>
+
+    <section class="area-formulario">
+      <form id="formLogin" class="formulario-login" novalidate>
+        <div class="cabecalho-formulario">
+          <h2>Acessar o sistema</h2>
+          <p>Informe seu e-mail e sua senha para continuar.</p>
+        </div>
+
+        <div class="campo">
+          <label for="email">E-mail</label>
+
+          <div class="entrada-container">
+            <span class="entrada-icone" aria-hidden="true">✉</span>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="username"
+              placeholder="seuemail@birivet.com.br"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="senha">Senha</label>
+
+          <div class="entrada-container">
+            <span class="entrada-icone" aria-hidden="true">●</span>
+            <input
+              id="senha"
+              name="senha"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Digite sua senha"
+              minlength="6"
+              required
+            >
+
+            <button
+              id="botaoMostrarSenha"
+              class="mostrar-senha"
+              type="button"
+              aria-label="Mostrar senha"
+              title="Mostrar senha"
+            >
+              👁
+            </button>
+          </div>
+        </div>
+
+        <div id="mensagem" class="mensagem" role="alert" aria-live="polite"></div>
+
+        <button id="botaoEntrar" class="botao-entrar" type="submit">
+          <span class="carregando" aria-hidden="true"></span>
+          <span id="textoBotao">Entrar</span>
+        </button>
+
+        <p class="seguranca">
+          Acesso restrito aos usuários autorizados da Birivet.
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const SUPABASE_URL = "https://ekfmnkvkkqivpcsaxzzj.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_HLpemwHF_YvYrEL3CTpm3w_mD9zPgeI";
+
+    const clienteSupabase = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      }
+    );
+
+    const formLogin = document.getElementById("formLogin");
+    const campoEmail = document.getElementById("email");
+    const campoSenha = document.getElementById("senha");
+    const botaoEntrar = document.getElementById("botaoEntrar");
+    const textoBotao = document.getElementById("textoBotao");
+    const botaoMostrarSenha = document.getElementById("botaoMostrarSenha");
+    const mensagem = document.getElementById("mensagem");
+
+    function exibirMensagem(texto, tipo = "erro") {
+      mensagem.textContent = texto;
+      mensagem.className = `mensagem ${tipo}`;
+    }
+
+    function limparMensagem() {
+      mensagem.textContent = "";
+      mensagem.className = "mensagem";
+    }
+
+    function definirCarregamento(ativo) {
+      botaoEntrar.disabled = ativo;
+      botaoEntrar.classList.toggle("processando", ativo);
+      textoBotao.textContent = ativo ? "Entrando..." : "Entrar";
+    }
+
+    function traduzirErroLogin(erro) {
+      const texto = String(erro?.message || "").toLowerCase();
+
+      if (texto.includes("invalid login credentials")) {
+        return "E-mail ou senha incorretos.";
+      }
+
+      if (texto.includes("email not confirmed")) {
+        return "Este e-mail ainda não foi confirmado.";
+      }
+
+      if (texto.includes("failed to fetch") || texto.includes("network")) {
+        return "Não foi possível conectar ao sistema. Verifique sua internet.";
+      }
+
+      if (texto.includes("rate limit")) {
+        return "Muitas tentativas seguidas. Aguarde um momento e tente novamente.";
+      }
+
+      return "Não foi possível entrar. Confira os dados e tente novamente.";
+    }
+
+    botaoMostrarSenha.addEventListener("click", () => {
+      const senhaVisivel = campoSenha.type === "text";
+
+      campoSenha.type = senhaVisivel ? "password" : "text";
+      botaoMostrarSenha.textContent = senhaVisivel ? "👁" : "🙈";
+      botaoMostrarSenha.setAttribute(
+        "aria-label",
+        senhaVisivel ? "Mostrar senha" : "Ocultar senha"
+      );
+      botaoMostrarSenha.title = senhaVisivel ? "Mostrar senha" : "Ocultar senha";
+    });
+
+    formLogin.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      limparMensagem();
+
+      const email = campoEmail.value.trim();
+      const senha = campoSenha.value;
+
+      if (!email || !senha) {
+        exibirMensagem("Preencha o e-mail e a senha.");
+        return;
+      }
+
+      if (!campoEmail.validity.valid) {
+        exibirMensagem("Informe um endereço de e-mail válido.");
+        campoEmail.focus();
+        return;
+      }
+
+      definirCarregamento(true);
+
+      try {
+        const { data, error } = await clienteSupabase.auth.signInWithPassword({
+          email,
+          password: senha
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data.session) {
+          throw new Error("Sessão não criada.");
+        }
+
+        exibirMensagem("Login realizado. Abrindo o sistema...", "sucesso");
+        window.location.replace("dashboard.html");
+      }
+
+      catch (erro) {
+        console.error("Erro ao realizar login:", erro);
+        exibirMensagem(traduzirErroLogin(erro));
+        definirCarregamento(false);
+      }
+    });
+
+    async function verificarSessaoExistente() {
+      try {
+        const { data, error } = await clienteSupabase.auth.getSession();
+
+        if (error) {
+          throw error;
+        }
+
+        if (data.session) {
+          window.location.replace("dashboard.html");
+        }
+      }
+
+      catch (erro) {
+        console.error("Erro ao verificar sessão:", erro);
+      }
+    }
+
+    verificarSessaoExistente();
+  </script>
+</body>
+
+</html>
