@@ -111,7 +111,7 @@
     .acao.excluir:hover { color: var(--vermelho); background: var(--vermelho-claro); }
     .material-codigo { margin-top: 4px; color: var(--texto-suave); font-size: .72rem; }
     .material-categoria { display: inline-flex; margin-top: 11px; padding: 5px 8px; border-radius: 999px; color: #1d4ed8; background: #dbeafe; font-size: .66rem; font-weight: 800; }
-    .quantidades { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-top: 15px; padding-top: 14px; border-top: 1px solid #edf2f7; }
+    .quantidades { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin-top: 15px; padding-top: 14px; border-top: 1px solid #edf2f7; }
     .quantidade { text-align: center; }
     .quantidade strong { display: block; font-size: 1.05rem; }
     .quantidade span { display: block; margin-top: 3px; color: var(--texto-suave); font-size: .61rem; font-weight: 700; text-transform: uppercase; }
@@ -287,7 +287,7 @@
       elementos.grade.innerHTML=filtrados.map(m=>{
         const st=statusInfo(m); const categoriaNome=m.categorias?.nome||"Sem categoria";
         const foto=m.foto_url?`<img src="${escapar(m.foto_url)}" alt="Foto de ${escapar(m.nome)}" loading="lazy">`:'📦';
-        return `<article class="material-card"><div class="material-foto">${foto}</div><div class="material-corpo"><div class="material-topo"><div><h3 class="material-nome">${escapar(m.nome)}</h3><div class="material-codigo">${escapar(m.codigo||"Sem código")}</div></div><div class="menu-acoes"><button class="acao" type="button" title="Editar" onclick="editarMaterial('${m.id}')">✎</button><button class="acao excluir" type="button" title="Excluir" onclick="excluirMaterial('${m.id}')">×</button></div></div><span class="material-categoria">${escapar(categoriaNome)}</span><div class="quantidades"><div class="quantidade"><strong>${numero(m.quantidade_total)}</strong><span>Total</span></div><div class="quantidade"><strong>${numero(m.quantidade_disponivel)}</strong><span>Disponível</span></div><div class="quantidade"><strong>${numero(m.quantidade_reservada)+numero(m.quantidade_em_uso)}</strong><span>Em uso</span></div></div><div class="material-rodape"><span class="badge ${st.classe}">${st.texto}</span><span class="conservacao">${escapar((m.estado_conservacao||"BOM").replaceAll("_"," "))}</span></div></div></article>`;
+        return `<article class="material-card"><div class="material-foto">${foto}</div><div class="material-corpo"><div class="material-topo"><div><h3 class="material-nome">${escapar(m.nome)}</h3><div class="material-codigo">${escapar(m.codigo||"Sem código")}</div></div><div class="menu-acoes"><button class="acao" type="button" title="Editar" onclick="editarMaterial('${m.id}')">✎</button><button class="acao excluir" type="button" title="Excluir" onclick="excluirMaterial('${m.id}')">×</button></div></div><span class="material-categoria">${escapar(categoriaNome)}</span><div class="quantidades"><div class="quantidade"><strong>${numero(m.quantidade_total)}</strong><span>Total</span></div><div class="quantidade"><strong>${numero(m.quantidade_disponivel)}</strong><span>Disponível</span></div><div class="quantidade"><strong>${numero(m.quantidade_reservada)+numero(m.quantidade_em_uso)}</strong><span>Em uso</span></div><div class="quantidade"><strong>${numero(m.quantidade_manutencao)}</strong><span>Manutenção</span></div></div><div class="material-rodape"><span class="badge ${st.classe}">${st.texto}</span><span class="conservacao">${escapar((m.estado_conservacao||"BOM").replaceAll("_"," "))}</span></div></div></article>`;
       }).join("");
     }
 
@@ -349,7 +349,7 @@
 
     window.excluirMaterial=async function(id) {
       const m=materiais.find(x=>x.id===id); if(!m) return;
-      if(numero(m.quantidade_reservada)+numero(m.quantidade_em_uso)>0) { alert("Este material possui unidades reservadas ou em uso e não pode ser excluído."); return; }
+      if(numero(m.quantidade_reservada)+numero(m.quantidade_em_uso)+numero(m.quantidade_manutencao)>0) { alert("ESTE MATERIAL POSSUI UNIDADES RESERVADAS, EM USO OU EM MANUTENÇÃO E NÃO PODE SER EXCLUÍDO."); return; }
       if(!confirm(`Deseja excluir o material "${m.nome}"?`)) return;
       const {error}=await clienteSupabase.from("materiais").update({ativo:false}).eq("id",id);
       if(error) { exibirMensagem("Não foi possível excluir o material."); return; }
