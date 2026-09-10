@@ -35,7 +35,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { min-height: 100%; }
-    body { min-height: 100vh; overflow-x: hidden; color: var(--texto); background: var(--fundo); font-family: Arial, Helvetica, sans-serif; }
+    body { min-height: 100vh; overflow-x: hidden; color: var(--texto); background: var(--fundo); font-family: Arial, Helvetica, sans-serif; text-transform: uppercase; }
     button, input, select, textarea { font: inherit; }
     button { cursor: pointer; }
 
@@ -332,7 +332,7 @@
         if(total<ocupados) throw new Error(`A quantidade total não pode ser menor que ${ocupados}, pois existem unidades reservadas, em uso ou manutenção.`);
         novaFoto=await enviarFoto(elementos.foto.files[0]);
         fotoFoiEnviada=Boolean(elementos.foto.files[0]);
-        const dados={ codigo:$("codigo").value.trim()||null, nome:$("nome").value.trim(), categoria_id:$("categoria").value, unidade:$("unidade").value, quantidade_total:total, quantidade_disponivel:total-ocupados, estoque_minimo:numero($("estoqueMinimo").value), localizacao:$("localizacao").value.trim()||null, estado_conservacao:$("estado").value, descricao:$("descricao").value.trim()||null, observacoes:$("observacoes").value.trim()||null, foto_url:novaFoto };
+        const dados={ codigo:$("codigo").value.trim().toLocaleUpperCase("pt-BR")||null, nome:$("nome").value.trim().toLocaleUpperCase("pt-BR"), categoria_id:$("categoria").value, unidade:$("unidade").value, quantidade_total:total, quantidade_disponivel:total-ocupados, estoque_minimo:numero($("estoqueMinimo").value), localizacao:$("localizacao").value.trim().toLocaleUpperCase("pt-BR")||null, estado_conservacao:$("estado").value, descricao:$("descricao").value.trim().toLocaleUpperCase("pt-BR")||null, observacoes:$("observacoes").value.trim().toLocaleUpperCase("pt-BR")||null, foto_url:novaFoto };
         if(!dados.nome||!dados.categoria_id) throw new Error("Preencha o nome e a categoria.");
         let resultado;
         if(materialEditando) resultado=await clienteSupabase.from("materiais").update(dados).eq("id",materialEditando.id);
