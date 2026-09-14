@@ -105,8 +105,8 @@
     .material-corpo { padding: 16px; }
     .material-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
     .material-nome { min-height: 42px; font-size: .96rem; line-height: 1.35; }
-    .menu-acoes { display: flex; gap: 5px; }
-    .acao { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid var(--borda); border-radius: 8px; color: var(--texto-suave); background: white; }
+    .menu-acoes { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+    .acao { min-height: 33px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 0 9px; border: 1px solid var(--borda); border-radius: 8px; color: var(--texto-suave); background: white; font-size: .65rem; font-weight: 800; }
     .acao:hover { color: var(--azul); background: var(--azul-claro); }
     .acao.excluir:hover { color: var(--vermelho); background: var(--vermelho-claro); }
     .material-codigo { margin-top: 4px; color: var(--texto-suave); font-size: .72rem; }
@@ -287,7 +287,7 @@
       elementos.grade.innerHTML=filtrados.map(m=>{
         const st=statusInfo(m); const categoriaNome=m.categorias?.nome||"Sem categoria";
         const foto=m.foto_url?`<img src="${escapar(m.foto_url)}" alt="Foto de ${escapar(m.nome)}" loading="lazy">`:'📦';
-        return `<article class="material-card"><div class="material-foto">${foto}</div><div class="material-corpo"><div class="material-topo"><div><h3 class="material-nome">${escapar(m.nome)}</h3><div class="material-codigo">${escapar(m.codigo||"Sem código")}</div></div><div class="menu-acoes"><button class="acao" type="button" title="Editar" onclick="editarMaterial('${m.id}')">✎</button><button class="acao excluir" type="button" title="Excluir" onclick="excluirMaterial('${m.id}')">×</button></div></div><span class="material-categoria">${escapar(categoriaNome)}</span><div class="quantidades"><div class="quantidade"><strong>${numero(m.quantidade_total)}</strong><span>Total</span></div><div class="quantidade"><strong>${numero(m.quantidade_disponivel)}</strong><span>Disponível</span></div><div class="quantidade"><strong>${numero(m.quantidade_reservada)+numero(m.quantidade_em_uso)}</strong><span>Em uso</span></div><div class="quantidade"><strong>${numero(m.quantidade_manutencao)}</strong><span>Manutenção</span></div></div><div class="material-rodape"><span class="badge ${st.classe}">${st.texto}</span><span class="conservacao">${escapar((m.estado_conservacao||"BOM").replaceAll("_"," "))}</span></div></div></article>`;
+        return `<article class="material-card"><div class="material-foto">${foto}</div><div class="material-corpo"><div class="material-topo"><div><h3 class="material-nome">${escapar(m.nome)}</h3><div class="material-codigo">${escapar(m.codigo||"Sem código")}</div></div><div class="menu-acoes"><button class="acao" type="button" title="EDITAR MATERIAL" aria-label="EDITAR ${escapar(m.nome)}" onclick="editarMaterial('${m.id}')">✎ EDITAR</button><button class="acao excluir" type="button" title="EXCLUIR MATERIAL" aria-label="EXCLUIR ${escapar(m.nome)}" onclick="excluirMaterial('${m.id}')">🗑 EXCLUIR</button></div></div><span class="material-categoria">${escapar(categoriaNome)}</span><div class="quantidades"><div class="quantidade"><strong>${numero(m.quantidade_total)}</strong><span>Total</span></div><div class="quantidade"><strong>${numero(m.quantidade_disponivel)}</strong><span>Disponível</span></div><div class="quantidade"><strong>${numero(m.quantidade_reservada)+numero(m.quantidade_em_uso)}</strong><span>Em uso</span></div><div class="quantidade"><strong>${numero(m.quantidade_manutencao)}</strong><span>Manutenção</span></div></div><div class="material-rodape"><span class="badge ${st.classe}">${st.texto}</span><span class="conservacao">${escapar((m.estado_conservacao||"BOM").replaceAll("_"," "))}</span></div></div></article>`;
       }).join("");
     }
 
