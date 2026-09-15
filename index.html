@@ -572,7 +572,36 @@
         return "Muitas tentativas seguidas. Aguarde um momento e tente novamente.";
       }
 
+      if (texto.includes("usuário inativo") || texto.includes("sem permissão")) {
+        return "Usuário inativo ou sem permissão de acesso.";
+      }
+
       return "Não foi possível entrar. Confira os dados e tente novamente.";
+    }
+
+    async function obterPaginaInicial(usuario) {
+      const { data: perfil, error } = await clienteSupabase
+        .from("perfis")
+        .select("nivel_acesso, ativo")
+        .eq("id", usuario.id)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!perfil || perfil.ativo !== true) {
+        await clienteSupabase.auth.signOut();
+        throw new Error("USUÁRIO INATIVO OU SEM PERMISSÃO DE ACESSO.");
+      }
+
+      const nivel = String(perfil.nivel_acesso || "").toUpperCase();
+
+      if (nivel === "ADMINISTRADOR" || nivel === "OPERADOR") {
+        return "dashboard.html";
+      }
+
+      return "solicitacoes.html";
     }
 
     botaoMostrarSenha.addEventListener("click", () => {
@@ -622,7 +651,9 @@
         }
 
         exibirMensagem("Login realizado. Abrindo o sistema...", "sucesso");
-        window.location.replace("dashboard.html");
+
+        const paginaInicial = await obterPaginaInicial(data.user);
+        window.location.replace(paginaInicial);
       }
 
       catch (erro) {
@@ -641,12 +672,14 @@
         }
 
         if (data.session) {
-          window.location.replace("dashboard.html");
+          const paginaInicial = await obterPaginaInicial(data.session.user);
+          window.location.replace(paginaInicial);
         }
       }
 
       catch (erro) {
         console.error("Erro ao verificar sessão:", erro);
+        exibirMensagem(traduzirErroLogin(erro));
       }
     }
 
