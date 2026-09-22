@@ -10,6 +10,7 @@
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="birieventos-permissoes.js"></script>
 
   <style>
     :root {
@@ -182,7 +183,7 @@
       <a class="menu-item" href="relatorios.html"><span class="menu-icone">▤</span>Relatórios</a>
     </nav>
     <div class="usuario-sidebar">
-      <div class="usuario-info"><div id="usuarioAvatar" class="usuario-avatar">A</div><div class="usuario-textos"><div class="usuario-nivel">ADMINISTRADOR</div><div id="usuarioEmail" class="usuario-email">Carregando...</div></div></div>
+      <div class="usuario-info"><div id="usuarioAvatar" class="usuario-avatar">A</div><div class="usuario-textos"><div class="usuario-nivel" data-birieventos-nivel>CARREGANDO...</div><div id="usuarioEmail" class="usuario-email">Carregando...</div></div></div>
       <button id="botaoSair" class="botao-sair" type="button">🚪 SAIR DO SISTEMA</button>
     </div>
   </aside>
