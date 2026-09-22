@@ -8,6 +8,7 @@
   <title>BiriEventos - Empréstimos</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="birieventos-permissoes.js"></script>
   <style>
     :root{--sidebar:#0f172a;--sidebar2:#172554;--azul:#2563eb;--azul2:#1d4ed8;--verde:#16a34a;--laranja:#ea580c;--roxo:#7c3aed;--vermelho:#dc2626;--texto:#1e293b;--suave:#64748b;--borda:#e2e8f0;--fundo:#f1f5f9;--branco:#fff;--largura:258px}
     *{box-sizing:border-box;margin:0;padding:0}html,body{min-height:100%}body{min-height:100vh;overflow-x:hidden;color:var(--texto);background:var(--fundo);font-family:Arial,Helvetica,sans-serif;text-transform:uppercase}button,input,select,textarea{font:inherit}button{cursor:pointer}
@@ -26,7 +27,7 @@
   <aside id="sidebar" class="sidebar">
     <div class="marca"><div class="marca-icone">📅</div><div><div class="marca-titulo">BiriEventos</div><div class="marca-versao">SISTEMA V1.0</div></div></div><div class="menu-titulo">MENU PRINCIPAL</div>
     <nav class="menu"><a class="menu-item" href="dashboard.html"><span class="menu-icone">▦</span>Dashboard</a><a class="menu-item" href="materiais.html"><span class="menu-icone">▣</span>Materiais</a><a class="menu-item" href="eventos.html"><span class="menu-icone">◆</span>Eventos</a><a class="menu-item ativo" href="emprestimos.html"><span class="menu-icone">⇄</span>Empréstimos</a><a class="menu-item" href="devolucoes.html"><span class="menu-icone">↩</span>Devoluções</a><a class="menu-item" href="solicitacoes.html"><span class="menu-icone">✦</span>Solicitações</a><a class="menu-item" href="aprovacoes.html"><span class="menu-icone">✓</span>Aprovações</a><a class="menu-item" href="usuarios.html"><span class="menu-icone">👥</span>Usuários</a><a class="menu-item" href="relatorios.html"><span class="menu-icone">▤</span>Relatórios</a></nav>
-    <div class="usuario"><div class="usuario-info"><div id="avatar" class="avatar">A</div><div class="usuario-textos"><div class="nivel">ADMINISTRADOR</div><div id="email" class="email">Carregando...</div></div></div><button id="sair" class="sair">🚪 SAIR DO SISTEMA</button></div>
+    <div class="usuario"><div class="usuario-info"><div id="avatar" class="avatar">A</div><div class="usuario-textos"><div class="nivel" data-birieventos-nivel>CARREGANDO...</div><div id="email" class="email">Carregando...</div></div></div><button id="sair" class="sair">🚪 SAIR DO SISTEMA</button></div>
   </aside>
   <div class="pagina"><header class="topbar"><button id="botaoMenu" class="botao-menu">☰</button><div><h1>Empréstimos</h1><p>Reservas e saídas de materiais para eventos</p></div><div class="online"><span class="ponto"></span>SISTEMA ONLINE</div></header>
     <main class="conteudo"><section class="cabecalho"><div><h2>Controle de empréstimos</h2><p>Reserve vários materiais e confirme a saída para cada evento.</p></div><button id="novo" class="principal">＋ Nova reserva</button></section>
