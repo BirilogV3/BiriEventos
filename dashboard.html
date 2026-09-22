@@ -777,7 +777,11 @@
         <div id="usuarioAvatar" class="usuario-avatar">A</div>
 
         <div class="usuario-textos">
-          <div class="usuario-nivel">ADMINISTRADOR</div>
+          <div
+            id="usuarioNivel"
+            class="usuario-nivel"
+            data-birieventos-nivel
+          >Carregando...</div>
           <div id="usuarioEmail" class="usuario-email">Carregando...</div>
         </div>
       </div>
@@ -931,6 +935,7 @@
     const erroPainel = document.getElementById("erroPainel");
     const usuarioEmail = document.getElementById("usuarioEmail");
     const usuarioAvatar = document.getElementById("usuarioAvatar");
+    const usuarioNivel = document.getElementById("usuarioNivel");
     const botaoSair = document.getElementById("botaoSair");
     const botaoMenu = document.getElementById("botaoMenu");
     const sidebar = document.getElementById("sidebar");
@@ -1141,6 +1146,27 @@
         }
 
         const email = data.session.user.email || "Usuário";
+
+        const { data: perfil, error: perfilError } = await clienteSupabase
+          .from("perfis")
+          .select("id, nome, email, nivel_acesso, ativo")
+          .eq("id", data.session.user.id)
+          .maybeSingle();
+
+        if (perfilError) {
+          throw perfilError;
+        }
+
+        if (!perfil || perfil.ativo === false) {
+          await clienteSupabase.auth.signOut();
+          window.location.replace("index.html");
+          return;
+        }
+
+        usuarioNivel.textContent = String(
+          perfil.nivel_acesso || "SOLICITANTE"
+        ).toUpperCase();
+
         usuarioEmail.textContent = email;
         usuarioEmail.title = email;
         usuarioAvatar.textContent = email.charAt(0).toUpperCase();
