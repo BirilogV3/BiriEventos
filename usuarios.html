@@ -8,7 +8,7 @@
   <title>BIRIEVENTOS - USUÁRIOS</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="birieventos-permissoes.js?v=20260923-1"></script>
+  <script src="birieventos-permissoes.js?v=20260923-2"></script>
   <style>
     :root{--sidebar:#0f172a;--sidebar2:#172554;--azul:#2563eb;--azul2:#1d4ed8;--verde:#16a34a;--vermelho:#dc2626;--roxo:#7c3aed;--texto:#1e293b;--suave:#64748b;--borda:#e2e8f0;--fundo:#f1f5f9;--branco:#fff;--largura:258px}
     *{box-sizing:border-box;margin:0;padding:0}html,body{min-height:100%}body{min-height:100vh;overflow-x:hidden;color:var(--texto);background:var(--fundo);font-family:Arial,Helvetica,sans-serif;text-transform:uppercase}button,input,select,textarea{font:inherit}button,select{text-transform:uppercase}button{cursor:pointer}.oculto{display:none!important}
@@ -88,8 +88,8 @@
   <script>
     const SUPABASE_URL="https://ekfmnkvkkqivpcsaxzzj.supabase.co";
     const SUPABASE_KEY="sb_publishable_HLpemwHF_YvYrEL3CTpm3w_mD9zPgeI";
-    const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-    const cadastroDb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+    const db=window.BiriEventosSupabase || supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    const cadastroDb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:"birieventos-cadastro-auth"}});
     const $=id=>document.getElementById(id);
     let usuario=null,perfil=null,usuarios=[],usuarioEditando=null;
 
