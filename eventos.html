@@ -10,7 +10,7 @@
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="birieventos-permissoes.js?v=20260923-1"></script>
+  <script src="birieventos-permissoes.js?v=20260923-2"></script>
 
   <style>
     :root {
@@ -132,7 +132,7 @@
   <script>
     const SUPABASE_URL="https://ekfmnkvkkqivpcsaxzzj.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY="sb_publishable_HLpemwHF_YvYrEL3CTpm3w_mD9zPgeI";
-    const clienteSupabase=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+    const clienteSupabase=window.BiriEventosSupabase || supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
     let eventos=[]; let eventoEditando=null;
     const $=id=>document.getElementById(id);
     const el={carregando:$("carregandoPagina"),sidebar:$("sidebar"),overlay:$("overlay"),modal:$("modalFundo"),form:$("formEvento"),conteudo:$("eventosConteudo"),mensagem:$("mensagem"),pesquisa:$("pesquisa"),filtroStatus:$("filtroStatus"),filtroPeriodo:$("filtroPeriodo"),salvar:$("salvar")};
