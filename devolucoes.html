@@ -8,7 +8,7 @@
   <title>BIRIEVENTOS - DEVOLUÇÕES</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="birieventos-permissoes.js?v=20260923-1"></script>
+  <script src="birieventos-permissoes.js?v=20260923-2"></script>
   <style>
     :root{--sidebar:#0f172a;--sidebar2:#172554;--azul:#2563eb;--azul2:#1d4ed8;--verde:#16a34a;--laranja:#ea580c;--roxo:#7c3aed;--texto:#1e293b;--suave:#64748b;--borda:#e2e8f0;--fundo:#f1f5f9;--largura:258px}
     *{box-sizing:border-box;margin:0;padding:0}html,body{min-height:100%}body{min-height:100vh;overflow-x:hidden;color:var(--texto);background:var(--fundo);font-family:Arial,Helvetica,sans-serif;text-transform:uppercase}button,input,select,textarea{font:inherit}button{cursor:pointer}
@@ -39,7 +39,7 @@
   <div id="modalFundo" class="modal-fundo"><form id="form" class="modal"><div class="modal-cabecalho"><h3>REGISTRAR DEVOLUÇÃO</h3><button id="fechar" class="fechar" type="button">×</button></div><div class="modal-corpo"><div id="modalEvento" class="modal-evento"></div><div id="itensModal"></div><div class="campo"><label for="observacoes">OBSERVAÇÕES DA DEVOLUÇÃO</label><textarea id="observacoes" maxlength="1200" placeholder="INFORME ALGUMA OBSERVAÇÃO, SE NECESSÁRIO."></textarea></div></div><div class="modal-rodape"><button id="cancelarModal" class="cancelar" type="button">CANCELAR</button><button id="salvar" class="salvar" type="submit">CONFIRMAR DEVOLUÇÃO</button></div></form></div>
   <script>
     const SUPABASE_URL="https://ekfmnkvkkqivpcsaxzzj.supabase.co",SUPABASE_KEY="sb_publishable_HLpemwHF_YvYrEL3CTpm3w_mD9zPgeI";
-    const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});let emprestimos=[],emprestimoAtual=null;const $=id=>document.getElementById(id);
+    const db=window.BiriEventosSupabase || supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});let emprestimos=[],emprestimoAtual=null;const $=id=>document.getElementById(id);
     function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}function num(v){return Number(v||0)}function data(v){if(!v)return"—";const d=v.slice(0,10).split("-");return d.length===3?`${d[2]}/${d[1]}/${d[0]}`:v}function pendente(i){return Math.max(0,num(i.quantidade_retirada)-num(i.quantidade_devolvida)-num(i.quantidade_danificada)-num(i.quantidade_perdida))}
     function st(s){const m={RETIRADO:["AGUARDANDO DEVOLUÇÃO","retirado"],DEVOLUCAO_PARCIAL:["DEVOLUÇÃO PARCIAL","parcial"],DEVOLVIDO:["DEVOLVIDO","devolvido"]};return m[s]||[s,"retirado"]}function msg(t,tipo="erro"){$("mensagem").textContent=t;$("mensagem").className=`mensagem ${tipo}`;if(tipo==="sucesso")setTimeout(()=>$("mensagem").className="mensagem",4000)}
     async function carregar(){const {data:registros,error}=await db.from("emprestimos").select("*,eventos(nome,cidade,uf),emprestimo_itens(id,material_id,quantidade_reservada,quantidade_retirada,quantidade_devolvida,quantidade_danificada,quantidade_perdida,materiais(nome,codigo))").in("status",["RETIRADO","DEVOLUCAO_PARCIAL","DEVOLVIDO"]).order("criado_em",{ascending:false});if(error)throw error;emprestimos=registros||[];resumo();renderizar()}
