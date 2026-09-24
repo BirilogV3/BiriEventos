@@ -1,4 +1,4 @@
-// BiriEventos - Controle central de permissões - 2026-09-22
+// BiriEventos - Controle central de permissões - 2026-09-24
 (function () {
   "use strict";
 
@@ -136,13 +136,15 @@
     ).trim();
 
     nivelAtual = nivel;
-
     window.BiriEventosPerfil = perfil;
 
+    // Mantém o perfil no atributo do <html> para uso em CSS.
     document.documentElement.dataset.birieventosNivel =
       nivel;
 
-    document
+    // Atualiza somente elementos dentro do <body>.
+    // O seletor global também encontrava o <html> e apagava a página.
+    document.body
       .querySelectorAll(
         ".usuario-nivel, .nivel, #nivel, [data-birieventos-nivel]"
       )
@@ -314,9 +316,7 @@
       error: erroPerfil
     } = await db
       .from("perfis")
-      .select(
-        "id,nome,email,nivel_acesso,ativo"
-      )
+      .select("id,nome,email,nivel_acesso,ativo")
       .eq("id", usuario.id)
       .single();
 
