@@ -1,0 +1,5180 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>BiriLog V3 - Pesquisar NF</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    /* =====================================================
+       SIDEBAR
+       ===================================================== */
+
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, #0f172a, #172554);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      box-shadow: 5px 0 20px rgba(0,0,0,0.10);
+      overflow: hidden;
+    }
+
+    .logo-area {
+      padding: 28px 22px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .logo-icon {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 12px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #1976d2, #0d47a1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 8px 20px rgba(25,118,210,0.30);
+    }
+
+    .logo-title {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .logo-title span {
+      color: #60a5fa;
+    }
+
+    .logo-version {
+      margin-top: 5px;
+      font-size: 10px;
+      color: #94a3b8;
+      letter-spacing: 1px;
+    }
+
+    /* =====================================================
+       MENU
+       ===================================================== */
+
+    .menu {
+      padding: 20px 12px;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .menu-title {
+      padding: 0 12px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 1px;
+    }
+
+    .menu-item {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      margin-bottom: 4px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 13px;
+      text-align: left;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+    }
+
+    .menu-item:hover {
+      background: rgba(255,255,255,0.08);
+      color: white;
+    }
+
+    .menu-item:active {
+      transform: scale(0.99);
+    }
+
+    .menu-item.active {
+      background: linear-gradient(135deg, #1976d2, #2563eb);
+      color: white;
+      box-shadow: 0 5px 15px rgba(37,99,235,0.25);
+    }
+
+    .menu-icon {
+      width: 22px;
+      text-align: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    /* =====================================================
+       USUÁRIO
+       ===================================================== */
+
+    .user-area {
+      padding: 15px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.08);
+      flex-shrink: 0;
+    }
+
+    .user-card {
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .user-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-email {
+      margin-top: 3px;
+      font-size: 9px;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-profile {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #60a5fa;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    /* =====================================================
+       SAIR
+       ===================================================== */
+
+    .logout {
+      width: 100%;
+      display: block;
+      visibility: visible;
+      opacity: 1;
+      position: relative;
+      z-index: 999;
+      pointer-events: auto;
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.07);
+      color: #e2e8f0;
+      padding: 11px 10px;
+      min-height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+    }
+
+    .logout:hover {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: white;
+    }
+
+    .logout:active {
+      transform: scale(0.98);
+    }
+
+    .logout:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    /* =====================================================
+       MAIN
+       ===================================================== */
+
+    .main {
+      margin-left: 250px;
+      width: calc(100% - 250px);
+      min-height: 100vh;
+    }
+
+    /* =====================================================
+       HEADER
+       ===================================================== */
+
+    .header {
+      height: 75px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .header-subtitle {
+      margin-top: 3px;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .status-online {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border-radius: 20px;
+      background: #f0fdf4;
+      color: #15803d;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    /* =====================================================
+       CONTENT
+       ===================================================== */
+
+    .content {
+      padding: 30px;
+    }
+
+    .mensagem {
+      display: none;
+      margin-bottom: 20px;
+      padding: 13px 16px;
+      border-radius: 9px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .mensagem.sucesso {
+      display: block;
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .mensagem.erro {
+      display: block;
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .mensagem.info {
+      display: block;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .page-title {
+      margin-bottom: 22px;
+    }
+
+    .page-title h1 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .page-title p {
+      margin-top: 5px;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    /* =====================================================
+       PAINEL
+       ===================================================== */
+
+    .panel {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 4px 15px rgba(15,23,42,0.04);
+      margin-bottom: 20px;
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .panel-subtitle {
+      margin-top: 4px;
+      font-size: 10px;
+      color: #94a3b8;
+    }
+
+    /* =====================================================
+       BUSCA
+       ===================================================== */
+
+    .pesquisa-area {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .campo-pesquisa {
+      position: relative;
+    }
+
+    .campo-pesquisa input {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px 0 44px;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      background: #f8fafc;
+      outline: none;
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    .campo-pesquisa input:focus {
+      background: white;
+      border-color: #1976d2;
+      box-shadow: 0 0 0 3px rgba(25,118,210,0.10);
+    }
+
+    .icone-pesquisa {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      pointer-events: none;
+    }
+
+    .btn-pesquisar {
+      height: 48px;
+      padding: 0 24px;
+      border: none;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #1976d2, #2563eb);
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 5px 14px rgba(37,99,235,0.20);
+      transition: 0.2s;
+    }
+
+    .btn-pesquisar:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-pesquisar:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
+
+    /* =====================================================
+       RESULTADO
+       ===================================================== */
+
+    .resultado {
+      display: none;
+    }
+
+    .resultado.aberto {
+      display: block;
+    }
+
+    .resultado-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 18px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .resultado-titulo {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .resultado-nf {
+      margin-top: 4px;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    /* =====================================================
+       STATUS
+       ===================================================== */
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .status-coletado {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-transito {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .status-entregue {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-atrasado {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .status-padrao {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    /* =====================================================
+       INFORMAÇÕES
+       ===================================================== */
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .info-box {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      background: #f8fafc;
+    }
+
+    .info-box-cliente {
+      position: relative;
+      z-index: 20;
+    }
+
+    .info-label {
+      font-size: 9px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .info-value {
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      word-break: break-word;
+    }
+
+    /* =====================================================
+       CAMPOS DE EDIÇÃO
+       ===================================================== */
+
+    .campo-edicao {
+      width: 100%;
+      height: 40px;
+      margin-top: 6px;
+      padding: 0 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      background: white;
+      color: #0f172a;
+      outline: none;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .campo-edicao:focus {
+      border-color: #1976d2;
+      box-shadow: 0 0 0 3px rgba(25,118,210,0.10);
+    }
+
+    .cliente-autocomplete {
+      position: relative;
+      margin-top: 6px;
+    }
+
+    .cliente-autocomplete .campo-edicao {
+      margin-top: 0;
+    }
+
+    .lista-sugestoes-clientes {
+      display: none;
+      position: absolute;
+      top: calc(100% + 5px);
+      left: 0;
+      right: 0;
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 1000;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 12px 28px rgba(15,23,42,0.18);
+    }
+
+    .cliente-sugestao {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      border: 0;
+      border-bottom: 1px solid #f1f5f9;
+      background: #ffffff;
+      color: #0f172a;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .cliente-sugestao:hover,
+    .cliente-sugestao:focus {
+      background: #eff6ff;
+      color: #0d47a1;
+      outline: none;
+    }
+
+    .cliente-sugestao-mensagem {
+      padding: 12px;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .contador-clientes {
+      margin-top: 6px;
+      color: #64748b;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .campo-edicao:disabled {
+      background: #f1f5f9;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+
+    textarea.campo-edicao {
+      min-height: 90px;
+      height: auto;
+      padding: 10px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    .observacao-box {
+      margin-top: 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 15px;
+      background: #f8fafc;
+    }
+
+    .observacao-label {
+      font-size: 9px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .observacao-texto {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #475569;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    /* =====================================================
+       ALERTA
+       ===================================================== */
+
+    .alerta-entrega {
+      display: none;
+      margin-top: 15px;
+      padding: 12px 14px;
+      border-radius: 9px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .alerta-entrega.aberto {
+      display: block;
+    }
+
+    .alerta-verde {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .alerta-amarelo {
+      background: #fefce8;
+      color: #854d0e;
+      border: 1px solid #fde68a;
+    }
+
+    .alerta-vermelho {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .alerta-azul {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .alerta-neutro {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* =====================================================
+       BOTÕES DE EDIÇÃO
+       ===================================================== */
+
+    .acoes-envio {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .btn {
+      min-height: 42px;
+      padding: 0 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 800;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
+
+    .btn-editar {
+      background: linear-gradient(135deg, #1976d2, #2563eb);
+      color: white;
+      box-shadow: 0 5px 14px rgba(37,99,235,0.20);
+    }
+
+    .btn-salvar {
+      background: linear-gradient(135deg, #15803d, #16a34a);
+      color: white;
+      box-shadow: 0 5px 14px rgba(22,163,74,0.20);
+    }
+
+    .btn-cancelar {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+
+    /* =====================================================
+       BOTÃO EXCLUIR
+       ===================================================== */
+
+    .btn-excluir {
+      background: linear-gradient(135deg, #b91c1c, #dc2626);
+      color: white;
+      box-shadow: 0 5px 14px rgba(220,38,38,0.20);
+    }
+
+    .btn-excluir:hover {
+      background: linear-gradient(135deg, #991b1b, #b91c1c);
+    }
+
+    .modo-edicao {
+      display: none;
+    }
+
+    .modo-edicao.aberto {
+      display: block;
+    }
+
+    .modo-consulta {
+      display: block;
+    }
+
+    .modo-consulta.oculto {
+      display: none;
+    }
+
+    .aviso-edicao {
+      display: none;
+      margin-bottom: 18px;
+      padding: 12px 14px;
+      border-radius: 9px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .aviso-edicao.aberto {
+      display: block;
+    }
+
+    /* =====================================================
+       SEM RESULTADO
+       ===================================================== */
+
+    .sem-resultado {
+      padding: 35px 20px;
+      text-align: center;
+      color: #94a3b8;
+    }
+
+    .sem-resultado-icon {
+      font-size: 35px;
+      margin-bottom: 10px;
+    }
+
+    .sem-resultado-titulo {
+      font-size: 13px;
+      font-weight: 800;
+      color: #475569;
+    }
+
+    .sem-resultado-texto {
+      margin-top: 5px;
+      font-size: 10px;
+      color: #94a3b8;
+    }
+
+    /* =====================================================
+       LOADING
+       ===================================================== */
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(248,250,252,0.88);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(2px);
+    }
+
+    .loading-box {
+      background: white;
+      border-radius: 14px;
+      padding: 25px 30px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(15,23,42,0.18);
+    }
+
+    .spinner {
+      width: 35px;
+      height: 35px;
+      margin: 0 auto 12px;
+      border: 3px solid #dbeafe;
+      border-top-color: #1976d2;
+      border-radius: 50%;
+      animation: girar .8s linear infinite;
+    }
+
+    .loading-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    @keyframes girar {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* =====================================================
+       RESPONSIVO
+       ===================================================== */
+
+    @media (max-width: 1000px) {
+
+      .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+    }
+
+    @media (max-width: 700px) {
+
+      .sidebar {
+        width: 70px;
+      }
+
+      .logo-title,
+      .logo-version,
+      .menu-title,
+      .menu-item span:not(.menu-icon),
+      .user-card {
+        display: none;
+      }
+
+      .logo-area {
+        padding: 18px 8px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+      }
+
+      .menu {
+        padding: 15px 8px;
+      }
+
+      .menu-item {
+        justify-content: center;
+        padding: 13px 5px;
+      }
+
+      .user-area {
+        padding: 10px 8px;
+      }
+
+      .logout {
+        font-size: 0;
+        padding: 12px 5px;
+        min-height: 42px;
+      }
+
+      .logout::before {
+        content: "🚪";
+        font-size: 17px;
+      }
+
+      .main {
+        margin-left: 70px;
+        width: calc(100% - 70px);
+      }
+
+      .header {
+        padding: 0 18px;
+      }
+
+      .header-title {
+        font-size: 17px;
+      }
+
+      .status-online {
+        font-size: 0;
+        padding: 9px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+      }
+
+      .content {
+        padding: 18px;
+      }
+
+      .pesquisa-area {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-pesquisar {
+        width: 100%;
+      }
+
+      .resultado-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .acoes-envio {
+        flex-direction: column;
+      }
+
+      .acoes-envio .btn {
+        width: 100%;
+      }
+
+    }
+
+    @media (max-width: 450px) {
+
+      .header-subtitle {
+        display: none;
+      }
+
+      .panel {
+        padding: 16px;
+      }
+
+      .page-title h1 {
+        font-size: 16px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <!-- =====================================================
+       LOADING
+       ===================================================== -->
+
+  <div
+    id="loading"
+    class="loading"
+  >
+
+    <div class="loading-box">
+
+      <div class="spinner"></div>
+
+      <div
+        id="loadingText"
+        class="loading-text"
+      >
+        CARREGANDO...
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       SIDEBAR
+       ===================================================== -->
+
+  <aside class="sidebar">
+
+    <div class="logo-area">
+
+      <div class="logo-icon">
+        🚚
+      </div>
+
+      <div class="logo-title">
+        Biri<span>Log</span>
+      </div>
+
+      <div class="logo-version">
+        SISTEMA V3.0
+      </div>
+
+    </div>
+
+
+    <nav class="menu">
+
+      <div class="menu-title">
+        MENU PRINCIPAL
+      </div>
+
+
+      <button
+        type="button"
+        class="menu-item"
+        onclick="irPara('dashboard.html')"
+      >
+
+        <span class="menu-icon">
+          📊
+        </span>
+
+        <span>
+          Dashboard
+        </span>
+
+      </button>
+
+
+      <button
+        type="button"
+        class="menu-item"
+        onclick="irPara('envios.html')"
+      >
+
+        <span class="menu-icon">
+          📦
+        </span>
+
+        <span>
+          Envios
+        </span>
+
+      </button>
+
+
+      <button
+        type="button"
+        class="menu-item active"
+      >
+
+        <span class="menu-icon">
+          🔎
+        </span>
+
+        <span>
+          Pesquisar NF
+        </span>
+
+      </button>
+
+
+      <button
+        type="button"
+        class="menu-item"
+        onclick="irPara('clientes.html')"
+      >
+
+        <span class="menu-icon">
+          👥
+        </span>
+
+        <span>
+          Clientes
+        </span>
+
+      </button>
+
+
+      <button
+        type="button"
+        class="menu-item"
+        onclick="irPara('transportadoras.html')"
+      >
+
+        <span class="menu-icon">
+          🚛
+        </span>
+
+        <span>
+          Transportadoras
+        </span>
+
+      </button>
+
+
+      <button
+        type="button"
+        class="menu-item"
+        onclick="irPara('relatorios.html')"
+      >
+
+        <span class="menu-icon">
+          📄
+        </span>
+
+        <span>
+          Relatórios
+        </span>
+
+      </button>
+
+
+      <button
+        type="button"
+        class="menu-item"
+        onclick="irPara('pos-entrega.html')"
+      >
+
+        <span class="menu-icon">
+          📱
+        </span>
+
+        <span>
+          Pós-Entrega
+        </span>
+
+      </button>
+
+
+      <button
+        type="button"
+        class="menu-item"
+        onclick="irPara('usuarios.html')"
+      >
+
+        <span class="menu-icon">
+          🔐
+        </span>
+
+        <span>
+          Usuários
+        </span>
+
+      </button>
+
+
+      <button
+        type="button"
+        class="menu-item"
+        onclick="irPara('configuracoes.html')"
+      >
+
+        <span class="menu-icon">
+          ⚙️
+        </span>
+
+        <span>
+          Configurações
+        </span>
+
+      </button>
+
+    </nav>
+
+
+    <div class="user-area">
+
+      <div class="user-card">
+
+        <div
+          id="usuarioNome"
+          class="user-name"
+        >
+          USUÁRIO
+        </div>
+
+        <div
+          id="usuarioEmail"
+          class="user-email"
+        >
+          -
+        </div>
+
+        <div
+          id="usuarioPerfil"
+          class="user-profile"
+        >
+          PERFIL
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="logout"
+        id="botaoSair"
+        onclick="sair()"
+      >
+
+        🚪 SAIR DO SISTEMA
+
+      </button>
+
+    </div>
+
+  </aside>
+
+
+  <!-- =====================================================
+       MAIN
+       ===================================================== -->
+
+  <main class="main">
+
+    <header class="header">
+
+      <div>
+
+        <div class="header-title">
+          Pesquisar NF
+        </div>
+
+        <div class="header-subtitle">
+          Consulte, altere ou exclua os dados completos de um envio
+        </div>
+
+      </div>
+
+
+      <div class="status-online">
+
+        <span class="status-dot"></span>
+
+        SISTEMA ONLINE
+
+      </div>
+
+    </header>
+
+
+    <section class="content">
+
+      <div
+        id="mensagem"
+        class="mensagem"
+      ></div>
+
+
+      <div class="page-title">
+
+        <h1>
+          🔎 PESQUISA DE NOTA FISCAL
+        </h1>
+
+        <p>
+          Informe a NF para consultar, editar ou excluir os dados completos do envio.
+        </p>
+
+      </div>
+
+
+      <!-- =================================================
+           PESQUISA
+           ================================================= -->
+
+      <div class="panel">
+
+        <div class="panel-title">
+          Consultar Nota Fiscal
+        </div>
+
+        <div class="panel-subtitle">
+          A pesquisa é feita diretamente no banco de dados do BiriLog.
+        </div>
+
+
+        <div class="pesquisa-area">
+
+          <div class="campo-pesquisa">
+
+            <span class="icone-pesquisa">
+              🔎
+            </span>
+
+            <input
+              type="text"
+              id="campoNF"
+              placeholder="DIGITE O NÚMERO DA NF"
+              autocomplete="off"
+              inputmode="numeric"
+            >
+
+          </div>
+
+
+          <button
+            type="button"
+            class="btn-pesquisar"
+            id="btnPesquisar"
+            onclick="pesquisarNF()"
+          >
+
+            🔎 PESQUISAR NF
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           RESULTADO
+           ================================================= -->
+
+      <div
+        id="resultado"
+        class="resultado"
+      >
+
+        <div class="panel">
+
+          <div class="resultado-header">
+
+            <div>
+
+              <div
+                id="resultadoTitulo"
+                class="resultado-titulo"
+              >
+                ENVIO ENCONTRADO
+              </div>
+
+              <div
+                id="resultadoNF"
+                class="resultado-nf"
+              >
+                NF -
+              </div>
+
+            </div>
+
+
+            <div
+              id="resultadoStatus"
+              class="status status-padrao"
+            >
+              SEM STATUS
+            </div>
+
+          </div>
+
+
+          <!-- =============================================
+               AVISO EDIÇÃO
+               ============================================= -->
+
+          <div
+            id="avisoEdicao"
+            class="aviso-edicao"
+          >
+            ✏️ MODO DE EDIÇÃO ATIVADO. ALTERE OS CAMPOS NECESSÁRIOS E CLIQUE EM SALVAR ALTERAÇÕES.
+          </div>
+
+
+          <!-- =============================================
+               MODO CONSULTA
+               ============================================= -->
+
+          <div
+            id="modoConsulta"
+            class="modo-consulta"
+          >
+
+            <div class="info-grid">
+
+              <div class="info-box">
+                <div class="info-label">Cliente</div>
+                <div id="infoCliente" class="info-value">-</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">Cidade</div>
+                <div id="infoCidade" class="info-value">-</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">UF</div>
+                <div id="infoUF" class="info-value">-</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">Transportadora</div>
+                <div id="infoTransportadora" class="info-value">-</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">Valor da NF</div>
+                <div id="infoValor" class="info-value">R$ 0,00</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">Volumes</div>
+                <div id="infoVolumes" class="info-value">-</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">Peso</div>
+                <div id="infoPeso" class="info-value">-</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">Data de Envio</div>
+                <div id="infoDataEnvio" class="info-value">-</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">Previsão</div>
+                <div id="infoPrevisao" class="info-value">-</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">Data de Entrega</div>
+                <div id="infoDataEntrega" class="info-value">-</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">Última Atualização</div>
+                <div id="infoAtualizacao" class="info-value">-</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-label">ID do Registro</div>
+                <div id="infoID" class="info-value">-</div>
+              </div>
+
+            </div>
+
+
+            <div
+              id="alertaEntrega"
+              class="alerta-entrega"
+            ></div>
+
+
+            <div class="observacao-box">
+
+              <div class="observacao-label">
+                Observação
+              </div>
+
+              <div
+                id="infoObservacao"
+                class="observacao-texto"
+              >
+                -
+              </div>
+
+            </div>
+
+
+            <div class="acoes-envio">
+
+              <button
+                type="button"
+                class="btn btn-editar"
+                onclick="ativarEdicao()"
+              >
+
+                ✏️ EDITAR ENVIO
+
+              </button>
+
+
+              <button
+                type="button"
+                class="btn btn-excluir"
+                id="btnExcluir"
+                onclick="excluirEnvio()"
+              >
+
+                🗑️ EXCLUIR ENVIO
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <!-- =============================================
+               MODO EDIÇÃO
+               ============================================= -->
+
+          <div
+            id="modoEdicao"
+            class="modo-edicao"
+          >
+
+            <div class="info-grid">
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Número da NF
+                </div>
+
+                <input
+                  type="text"
+                  id="editNF"
+                  class="campo-edicao"
+                  autocomplete="off"
+                >
+
+              </div>
+
+
+              <div class="info-box info-box-cliente">
+
+                <div class="info-label">
+                  Cliente
+                </div>
+
+                <div class="cliente-autocomplete" id="clienteAutocomplete">
+
+                  <input
+                    type="text"
+                    id="editClientePesquisa"
+                    class="campo-edicao"
+                    placeholder="PESQUISE PELO CÓDIGO OU NOME"
+                    autocomplete="off"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-controls="editClienteSugestoes"
+                  >
+
+                  <div
+                    id="editClienteSugestoes"
+                    class="lista-sugestoes-clientes"
+                    role="listbox"
+                  ></div>
+
+                  <div
+                    id="editClienteContagem"
+                    class="contador-clientes"
+                  >
+                    CARREGANDO CLIENTES...
+                  </div>
+
+                  <select
+                    id="editCliente"
+                    hidden
+                    aria-hidden="true"
+                    tabindex="-1"
+                  >
+                    <option value="">
+                      SELECIONE O CLIENTE
+                    </option>
+                  </select>
+
+                </div>
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Cidade
+                </div>
+
+                <input
+                  type="text"
+                  id="editCidade"
+                  class="campo-edicao"
+                  autocomplete="off"
+                >
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  UF
+                </div>
+
+                <input
+                  type="text"
+                  id="editUF"
+                  class="campo-edicao"
+                  maxlength="2"
+                  autocomplete="off"
+                >
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Transportadora
+                </div>
+
+                <select
+                  id="editTransportadora"
+                  class="campo-edicao"
+                >
+
+                  <option value="">
+                    CARREGANDO TRANSPORTADORAS...
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Valor da NF
+                </div>
+
+                <input
+                  type="number"
+                  id="editValor"
+                  class="campo-edicao"
+                  step="0.01"
+                  min="0"
+                >
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Volumes
+                </div>
+
+                <input
+                  type="number"
+                  id="editVolumes"
+                  class="campo-edicao"
+                  min="1"
+                  step="1"
+                >
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Peso
+                </div>
+
+                <input
+                  type="number"
+                  id="editPeso"
+                  class="campo-edicao"
+                  min="0"
+                  step="0.01"
+                >
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Data de Envio
+                </div>
+
+                <input
+                  type="date"
+                  id="editDataEnvio"
+                  class="campo-edicao"
+                >
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Previsão
+                </div>
+
+                <input
+                  type="date"
+                  id="editPrevisao"
+                  class="campo-edicao"
+                >
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Status
+                </div>
+
+                <select
+                  id="editStatus"
+                  class="campo-edicao"
+                >
+
+                  <option value="COLETADO">
+                    📦 COLETADO
+                  </option>
+
+                  <option value="EM TRANSITO">
+                    🚚 EM TRÂNSITO
+                  </option>
+
+                  <option value="ENTREGUE">
+                    ✅ ENTREGUE
+                  </option>
+
+                  <option value="ATRASADO">
+                    ⚠️ ATRASADO
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Data de Entrega
+                </div>
+
+                <input
+                  type="date"
+                  id="editDataEntrega"
+                  class="campo-edicao"
+                >
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Confirmação de Entrega
+                </div>
+
+                <input
+                  type="text"
+                  id="editConfirmacao"
+                  class="campo-edicao"
+                  autocomplete="off"
+                >
+
+              </div>
+
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  Data de Contato
+                </div>
+
+                <input
+                  type="datetime-local"
+                  id="editDataContato"
+                  class="campo-edicao"
+                >
+
+              </div>
+
+            </div>
+
+
+            <div class="observacao-box">
+
+              <div class="observacao-label">
+                Observação
+              </div>
+
+              <textarea
+                id="editObservacao"
+                class="campo-edicao"
+                placeholder="DIGITE UMA OBSERVAÇÃO..."
+              ></textarea>
+
+            </div>
+
+
+            <div class="observacao-box">
+
+              <div class="observacao-label">
+                Observação do Contato
+              </div>
+
+              <textarea
+                id="editObservacaoContato"
+                class="campo-edicao"
+                placeholder="DIGITE UMA OBSERVAÇÃO SOBRE O CONTATO..."
+              ></textarea>
+
+            </div>
+
+
+            <div class="acoes-envio">
+
+              <button
+                type="button"
+                class="btn btn-cancelar"
+                id="btnCancelar"
+                onclick="cancelarEdicao()"
+              >
+
+                ↩️ CANCELAR
+
+              </button>
+
+
+              <button
+                type="button"
+                class="btn btn-salvar"
+                id="btnSalvar"
+                onclick="salvarAlteracoes()"
+              >
+
+                💾 SALVAR ALTERAÇÕES
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           SEM RESULTADO
+           ================================================= -->
+
+      <div
+        id="semResultado"
+        class="panel"
+      >
+
+        <div class="sem-resultado">
+
+          <div class="sem-resultado-icon">
+            🔎
+          </div>
+
+          <div class="sem-resultado-titulo">
+            CONSULTE UMA NOTA FISCAL
+          </div>
+
+          <div class="sem-resultado-texto">
+            Digite a NF acima para visualizar os dados do envio.
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+       ===================================================== -->
+
+  <script>
+
+    /* =====================================================
+       SUPABASE
+       ===================================================== */
+
+    const SUPABASE_URL =
+      "https://sjfwjwwkomrcalahqanw.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_WpXZ79UY0pOqbbpFmJDcdQ_wkYQZLZC";
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    let usuarioAtual = null;
+
+    let envioAtual = null;
+
+
+    /* =====================================================
+       INICIALIZAÇÃO
+       ===================================================== */
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      iniciar
+    );
+
+
+    async function iniciar() {
+
+      try {
+
+        configurarBuscaClientes();
+
+        mostrarLoading(
+          "VERIFICANDO SESSÃO..."
+        );
+
+
+        const resultado =
+          await supabaseClient.auth.getSession();
+
+
+        if (resultado.error) {
+          throw resultado.error;
+        }
+
+
+        const session =
+          resultado.data &&
+          resultado.data.session;
+
+
+        if (!session) {
+
+          redirecionarLogin();
+
+          return;
+
+        }
+
+
+        const authUser =
+          session.user;
+
+
+        const consulta =
+          await supabaseClient
+            .from("usuarios")
+            .select("id, nome, email, perfil, ativo")
+            .eq("auth_id", authUser.id)
+            .maybeSingle();
+
+
+        if (consulta.error) {
+          throw consulta.error;
+        }
+
+
+        if (!consulta.data) {
+
+          await supabaseClient.auth.signOut();
+
+          redirecionarLogin();
+
+          return;
+
+        }
+
+
+        if (consulta.data.ativo === false) {
+
+          await supabaseClient.auth.signOut();
+
+          redirecionarLogin();
+
+          return;
+
+        }
+
+
+        usuarioAtual =
+          consulta.data;
+
+
+        preencherUsuario();
+
+        esconderLoading();
+
+
+        await carregarListas();
+
+      }
+
+      catch (erro) {
+
+        console.error(
+          "Erro ao iniciar:",
+          erro
+        );
+
+        esconderLoading();
+
+        mostrarMensagem(
+          "NÃO FOI POSSÍVEL CARREGAR A PÁGINA DE PESQUISA.",
+          "erro"
+        );
+
+      }
+
+    }
+
+
+    /* =====================================================
+       USUÁRIO
+       ===================================================== */
+
+    function preencherUsuario() {
+
+      if (!usuarioAtual) {
+        return;
+      }
+
+
+      const nome =
+        usuarioAtual.nome ||
+        usuarioAtual.email ||
+        "USUÁRIO";
+
+
+      document.getElementById(
+        "usuarioNome"
+      ).textContent =
+        String(nome).toUpperCase();
+
+
+      document.getElementById(
+        "usuarioEmail"
+      ).textContent =
+        usuarioAtual.email || "-";
+
+
+      document.getElementById(
+        "usuarioPerfil"
+      ).textContent =
+        String(
+          usuarioAtual.perfil ||
+          "USUÁRIO"
+        ).toUpperCase();
+
+    }
+
+
+    /* =====================================================
+       CARREGAR CLIENTES E TRANSPORTADORAS
+       ===================================================== */
+
+    async function carregarTodosClientes() {
+
+      const clientes = [];
+      const tamanhoLote = 1000;
+      let inicio = 0;
+
+      while (true) {
+
+        const resultado =
+          await supabaseClient
+            .from("clientes")
+            .select("id, codigo, nome, cidade, uf, ativo")
+            .order("nome", {
+              ascending: true
+            })
+            .order("id", {
+              ascending: true
+            })
+            .range(
+              inicio,
+              inicio + tamanhoLote - 1
+            );
+
+        if (resultado.error) {
+          throw resultado.error;
+        }
+
+        const lote =
+          resultado.data || [];
+
+        if (lote.length === 0) {
+          break;
+        }
+
+        clientes.push(...lote);
+        inicio += lote.length;
+
+      }
+
+      return clientes;
+
+    }
+
+
+    async function carregarListas() {
+
+      try {
+
+        const resultadoClientes =
+          await carregarTodosClientes();
+
+
+        const resultadoTransportadoras =
+          await supabaseClient
+            .from("transportadoras")
+            .select("id, nome, cidade, uf, ativo")
+            .eq("ativo", true)
+            .order("nome", {
+              ascending: true
+            });
+
+
+        if (resultadoTransportadoras.error) {
+          throw resultadoTransportadoras.error;
+        }
+
+
+        window.listaClientes =
+          resultadoClientes;
+
+
+        window.listaTransportadoras =
+          resultadoTransportadoras.data || [];
+
+
+        preencherSelectClientes();
+
+        preencherSelectTransportadoras();
+
+      }
+
+      catch (erro) {
+
+        console.error(
+          "Erro ao carregar listas:",
+          erro
+        );
+
+        mostrarMensagem(
+          "NÃO FOI POSSÍVEL CARREGAR CLIENTES E TRANSPORTADORAS.",
+          "erro"
+        );
+
+      }
+
+    }
+
+    function obterRotuloCliente(cliente) {
+
+      const codigo =
+        String(cliente.codigo || "").trim();
+
+      const nome =
+        String(cliente.nome || "").trim();
+
+      let rotulo =
+        codigo
+          ? codigo + " - " + nome
+          : nome;
+
+      if (cliente.ativo === false) {
+        rotulo += " — INATIVO";
+      }
+
+      return rotulo;
+
+    }
+
+
+    function normalizarBuscaCliente(valor) {
+
+      return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .trim();
+
+    }
+
+
+    function preencherSelectClientes() {
+
+      const select =
+        document.getElementById("editCliente");
+
+      const lista =
+        window.listaClientes || [];
+
+      if (!select) {
+        return;
+      }
+
+      select.innerHTML = "";
+
+      const opcaoInicial =
+        document.createElement("option");
+
+      opcaoInicial.value = "";
+      opcaoInicial.textContent = "SELECIONE O CLIENTE";
+      select.appendChild(opcaoInicial);
+
+      lista.forEach(function(cliente) {
+
+        const option =
+          document.createElement("option");
+
+        option.value = cliente.id;
+        option.textContent = obterRotuloCliente(cliente);
+        option.dataset.nome = cliente.nome || "";
+        option.dataset.cidade = cliente.cidade || "";
+        option.dataset.uf = cliente.uf || "";
+
+        select.appendChild(option);
+
+      });
+
+      const contador =
+        document.getElementById("editClienteContagem");
+
+      if (contador) {
+        contador.textContent =
+          lista.length.toLocaleString("pt-BR") +
+          " CLIENTES CARREGADOS — PESQUISE PELO CÓDIGO OU NOME.";
+      }
+
+    }
+
+
+    function fecharSugestoesClientes() {
+
+      const lista =
+        document.getElementById("editClienteSugestoes");
+
+      const campo =
+        document.getElementById("editClientePesquisa");
+
+      if (lista) {
+        lista.style.display = "none";
+        lista.innerHTML = "";
+      }
+
+      if (campo) {
+        campo.setAttribute("aria-expanded", "false");
+      }
+
+    }
+
+
+    function mostrarMensagemSugestoesClientes(texto) {
+
+      const lista =
+        document.getElementById("editClienteSugestoes");
+
+      const campo =
+        document.getElementById("editClientePesquisa");
+
+      if (!lista) {
+        return;
+      }
+
+      lista.innerHTML = "";
+
+      const mensagem =
+        document.createElement("div");
+
+      mensagem.className =
+        "cliente-sugestao-mensagem";
+
+      mensagem.textContent = texto;
+      lista.appendChild(mensagem);
+      lista.style.display = "block";
+
+      if (campo) {
+        campo.setAttribute("aria-expanded", "true");
+      }
+
+    }
+
+
+    function pesquisarClientesParaEdicao(texto, mostrarInstrucao) {
+
+      const campo =
+        document.getElementById("editClientePesquisa");
+
+      const painel =
+        document.getElementById("editClienteSugestoes");
+
+      const termo =
+        normalizarBuscaCliente(texto);
+
+      if (!campo || !painel) {
+        return;
+      }
+
+      if (!termo) {
+
+        if (mostrarInstrucao) {
+          mostrarMensagemSugestoesClientes(
+            "DIGITE O CÓDIGO OU O NOME DO CLIENTE."
+          );
+        } else {
+          fecharSugestoesClientes();
+        }
+
+        return;
+
+      }
+
+      const correspondencias =
+        (window.listaClientes || []).filter(function(cliente) {
+
+          const codigo =
+            normalizarBuscaCliente(cliente.codigo);
+
+          const nome =
+            normalizarBuscaCliente(cliente.nome);
+
+          return codigo.includes(termo) || nome.includes(termo);
+
+        });
+
+      painel.innerHTML = "";
+
+      if (correspondencias.length === 0) {
+
+        mostrarMensagemSugestoesClientes(
+          "NENHUM CLIENTE ENCONTRADO PARA ESSA BUSCA."
+        );
+
+        return;
+
+      }
+
+      const limiteExibicao = 30;
+
+      correspondencias
+        .slice(0, limiteExibicao)
+        .forEach(function(cliente) {
+
+          const botao =
+            document.createElement("button");
+
+          botao.type = "button";
+          botao.className = "cliente-sugestao";
+          botao.setAttribute("role", "option");
+          botao.textContent = obterRotuloCliente(cliente);
+
+          botao.addEventListener("click", function() {
+            selecionarClientePorId(cliente.id);
+          });
+
+          painel.appendChild(botao);
+
+        });
+
+      if (correspondencias.length > limiteExibicao) {
+
+        const aviso =
+          document.createElement("div");
+
+        aviso.className =
+          "cliente-sugestao-mensagem";
+
+        aviso.textContent =
+          "EXIBINDO OS 30 PRIMEIROS DE " +
+          correspondencias.length.toLocaleString("pt-BR") +
+          " RESULTADOS. DIGITE MAIS PARA REFINAR.";
+
+        painel.appendChild(aviso);
+
+      }
+
+      painel.style.display = "block";
+      campo.setAttribute("aria-expanded", "true");
+
+    }
+
+
+    function selecionarClientePorId(clienteId, atualizarLocalizacao = true) {
+
+      const cliente =
+        (window.listaClientes || []).find(function(item) {
+          return String(item.id) === String(clienteId);
+        });
+
+      const select =
+        document.getElementById("editCliente");
+
+      const campo =
+        document.getElementById("editClientePesquisa");
+
+      if (!cliente || !select || !campo) {
+        return;
+      }
+
+      select.value = String(cliente.id);
+      campo.value = obterRotuloCliente(cliente);
+      campo.dataset.clienteId = String(cliente.id);
+
+      fecharSugestoesClientes();
+
+      if (atualizarLocalizacao) {
+        select.dispatchEvent(
+          new Event("change", { bubbles: true })
+        );
+      }
+
+    }
+
+
+    function configurarBuscaClientes() {
+
+      const campo =
+        document.getElementById("editClientePesquisa");
+
+      const select =
+        document.getElementById("editCliente");
+
+      const area =
+        document.getElementById("clienteAutocomplete");
+
+      if (!campo || !select || !area || campo.dataset.configurado === "true") {
+        return;
+      }
+
+      campo.dataset.configurado = "true";
+
+      campo.addEventListener("input", function() {
+
+        select.value = "";
+        delete campo.dataset.clienteId;
+
+        pesquisarClientesParaEdicao(campo.value, false);
+
+      });
+
+      campo.addEventListener("focus", function() {
+
+        if (select.value) {
+          campo.select();
+          return;
+        }
+
+        pesquisarClientesParaEdicao(campo.value, true);
+
+      });
+
+      campo.addEventListener("keydown", function(evento) {
+
+        if (evento.key === "Escape") {
+          fecharSugestoesClientes();
+          return;
+        }
+
+        if (evento.key === "Enter") {
+
+          const primeiro =
+            document.querySelector(
+              "#editClienteSugestoes .cliente-sugestao"
+            );
+
+          if (primeiro) {
+            evento.preventDefault();
+            primeiro.click();
+          }
+
+        }
+
+      });
+
+      document.addEventListener("click", function(evento) {
+
+        if (!area.contains(evento.target)) {
+          fecharSugestoesClientes();
+        }
+
+      });
+
+    }
+
+
+    function preencherSelectTransportadoras() {
+
+      const select =
+        document.getElementById(
+          "editTransportadora"
+        );
+
+
+      if (!select) {
+        return;
+      }
+
+
+      select.innerHTML =
+        "";
+
+
+      const opcao =
+        document.createElement(
+          "option"
+        );
+
+
+      opcao.value =
+        "";
+
+
+      opcao.textContent =
+        "SELECIONE A TRANSPORTADORA";
+
+
+      select.appendChild(
+        opcao
+      );
+
+
+      const lista =
+        window.listaTransportadoras || [];
+
+
+      lista.forEach(
+        function(transportadora) {
+
+          const option =
+            document.createElement(
+              "option"
+            );
+
+
+          option.value =
+            transportadora.id;
+
+
+          option.textContent =
+            transportadora.nome;
+
+
+          option.dataset.nome =
+            transportadora.nome || "";
+
+
+          select.appendChild(
+            option
+          );
+
+        }
+      );
+
+    }
+
+
+    /* =====================================================
+       PESQUISAR NF
+       ===================================================== */
+
+    async function pesquisarNF() {
+
+      const campo =
+        document.getElementById(
+          "campoNF"
+        );
+
+
+      const botao =
+        document.getElementById(
+          "btnPesquisar"
+        );
+
+
+      const nf =
+        String(
+          campo.value || ""
+        ).trim();
+
+
+      esconderResultado();
+
+      limparMensagem();
+
+      cancelarEdicaoInterna();
+
+
+      if (!nf) {
+
+        mostrarMensagem(
+          "DIGITE O NÚMERO DA NF PARA PESQUISAR.",
+          "erro"
+        );
+
+        campo.focus();
+
+        return;
+
+      }
+
+
+      try {
+
+        botao.disabled =
+          true;
+
+
+        botao.textContent =
+          "🔄 PESQUISANDO...";
+
+
+        mostrarLoading(
+          "PESQUISANDO NF " +
+          nf +
+          "..."
+        );
+
+
+        const consulta =
+          await supabaseClient
+            .from("envios")
+            .select("*")
+            .eq("nf", nf)
+            .limit(1);
+
+
+        if (consulta.error) {
+          throw consulta.error;
+        }
+
+
+        let envio =
+          consulta.data &&
+          consulta.data.length > 0
+            ? consulta.data[0]
+            : null;
+
+
+        if (!envio) {
+
+          const todos =
+            await supabaseClient
+              .from("envios")
+              .select("*");
+
+
+          if (todos.error) {
+            throw todos.error;
+          }
+
+
+          const lista =
+            todos.data || [];
+
+
+          envio =
+            lista.find(
+              function(item) {
+
+                return String(
+                  item.nf || ""
+                )
+                .trim()
+                .toUpperCase() ===
+                nf.toUpperCase();
+
+              }
+            );
+
+        }
+
+
+        esconderLoading();
+
+
+        botao.disabled =
+          false;
+
+
+        botao.textContent =
+          "🔎 PESQUISAR NF";
+
+
+        if (!envio) {
+
+          mostrarMensagem(
+            "NENHUM ENVIO ENCONTRADO PARA A NF " +
+            nf +
+            ".",
+            "erro"
+          );
+
+          mostrarSemResultado();
+
+          return;
+
+        }
+
+
+        envioAtual =
+          envio;
+
+
+        mostrarResultado(
+          envio
+        );
+
+      }
+
+      catch (erro) {
+
+        console.error(
+          "Erro na pesquisa:",
+          erro
+        );
+
+
+        esconderLoading();
+
+
+        botao.disabled =
+          false;
+
+
+        botao.textContent =
+          "🔎 PESQUISAR NF";
+
+
+        mostrarMensagem(
+          obterMensagemErro(erro),
+          "erro"
+        );
+
+      }
+
+    }
+
+
+    /* =====================================================
+       MOSTRAR RESULTADO
+       ===================================================== */
+
+    function mostrarResultado(envio) {
+
+      document
+        .getElementById("resultado")
+        .classList.add("aberto");
+
+
+      document.getElementById(
+        "semResultado"
+      ).style.display =
+        "none";
+
+
+      document.getElementById(
+        "resultadoNF"
+      ).textContent =
+        "NF " +
+        String(
+          envio.nf || "-"
+        ).toUpperCase();
+
+
+      document.getElementById(
+        "infoCliente"
+      ).textContent =
+        envio.cliente_nome ||
+        envio.cliente ||
+        "-";
+
+
+      document.getElementById(
+        "infoCidade"
+      ).textContent =
+        envio.cidade ||
+        "-";
+
+
+      document.getElementById(
+        "infoUF"
+      ).textContent =
+        envio.uf ||
+        "-";
+
+
+      document.getElementById(
+        "infoTransportadora"
+      ).textContent =
+        envio.transportadora_nome ||
+        envio.transportadora ||
+        "-";
+
+
+      document.getElementById(
+        "infoValor"
+      ).textContent =
+        formatarValor(
+          envio.valor
+        );
+
+
+      document.getElementById(
+        "infoVolumes"
+      ).textContent =
+        envio.volumes ??
+        "-";
+
+
+      document.getElementById(
+        "infoPeso"
+      ).textContent =
+        envio.peso !== null &&
+        envio.peso !== undefined &&
+        envio.peso !== ""
+          ? Number(
+              envio.peso
+            ).toLocaleString(
+              "pt-BR",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }
+            ) + " KG"
+          : "-";
+
+
+      document.getElementById(
+        "infoDataEnvio"
+      ).textContent =
+        formatarData(
+          envio.data_envio
+        );
+
+
+      document.getElementById(
+        "infoPrevisao"
+      ).textContent =
+        formatarData(
+          envio.previsao
+        );
+
+
+      document.getElementById(
+        "infoDataEntrega"
+      ).textContent =
+        formatarData(
+          envio.data_entrega
+        );
+
+
+      document.getElementById(
+        "infoAtualizacao"
+      ).textContent =
+        formatarDataHora(
+          envio.atualizado_em ||
+          envio.updated_at ||
+          envio.atualizacao ||
+          envio.criado_em ||
+          envio.created_at
+        );
+
+
+      document.getElementById(
+        "infoID"
+      ).textContent =
+        envio.id ||
+        "-";
+
+
+      document.getElementById(
+        "infoObservacao"
+      ).textContent =
+        envio.observacao ||
+        "SEM OBSERVAÇÃO.";
+
+
+      atualizarStatus(
+        envio.status
+      );
+
+
+      atualizarAlerta(
+        envio
+      );
+
+
+      preencherCamposEdicao(
+        envio
+      );
+
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    }
+
+
+    /* =====================================================
+       PREENCHER EDIÇÃO
+       ===================================================== */
+
+    function preencherCamposEdicao(envio) {
+
+      document.getElementById(
+        "editNF"
+      ).value =
+        envio.nf ||
+        "";
+
+
+      document.getElementById(
+        "editCidade"
+      ).value =
+        envio.cidade ||
+        "";
+
+
+      document.getElementById(
+        "editUF"
+      ).value =
+        envio.uf ||
+        "";
+
+
+      document.getElementById(
+        "editValor"
+      ).value =
+        envio.valor ??
+        "";
+
+
+      document.getElementById(
+        "editVolumes"
+      ).value =
+        envio.volumes ??
+        "";
+
+
+      document.getElementById(
+        "editPeso"
+      ).value =
+        envio.peso ??
+        "";
+
+
+      document.getElementById(
+        "editDataEnvio"
+      ).value =
+        normalizarDataInput(
+          envio.data_envio
+        );
+
+
+      document.getElementById(
+        "editPrevisao"
+      ).value =
+        normalizarDataInput(
+          envio.previsao
+        );
+
+
+      document.getElementById(
+        "editStatus"
+      ).value =
+        normalizarStatus(
+          envio.status
+        ) ||
+        "COLETADO";
+
+
+      document.getElementById(
+        "editDataEntrega"
+      ).value =
+        normalizarDataInput(
+          envio.data_entrega
+        );
+
+
+      document.getElementById(
+        "editConfirmacao"
+      ).value =
+        envio.confirmacao_entrega ||
+        "";
+
+
+      document.getElementById(
+        "editDataContato"
+      ).value =
+        normalizarDataHoraInput(
+          envio.data_contato
+        );
+
+
+      document.getElementById(
+        "editObservacao"
+      ).value =
+        envio.observacao ||
+        "";
+
+
+      document.getElementById(
+        "editObservacaoContato"
+      ).value =
+        envio.observacao_contato ||
+        "";
+
+
+      selecionarCliente(
+        envio.cliente_id,
+        envio.cliente_nome
+      );
+
+
+      selecionarTransportadora(
+        envio.transportadora_id,
+        envio.transportadora_nome ||
+        envio.transportadora
+      );
+
+    }
+
+
+    function selecionarCliente(
+      clienteId,
+      clienteNome
+    ) {
+
+      const select =
+        document.getElementById("editCliente");
+
+      const campo =
+        document.getElementById("editClientePesquisa");
+
+      if (!select || !campo) {
+        return;
+      }
+
+      let encontrado = null;
+
+      if (clienteId) {
+
+        encontrado =
+          (window.listaClientes || []).find(function(cliente) {
+            return String(cliente.id) === String(clienteId);
+          }) || null;
+
+      }
+
+      if (!encontrado && clienteNome) {
+
+        const nomeBuscado =
+          normalizarBuscaCliente(clienteNome);
+
+        encontrado =
+          (window.listaClientes || []).find(function(cliente) {
+            return normalizarBuscaCliente(cliente.nome) === nomeBuscado;
+          }) || null;
+
+      }
+
+      if (encontrado) {
+        selecionarClientePorId(encontrado.id, false);
+        return;
+      }
+
+      select.value = "";
+      campo.value = clienteNome || "";
+      delete campo.dataset.clienteId;
+
+    }
+
+
+    function selecionarTransportadora(
+      transportadoraId,
+      transportadoraNome
+    ) {
+
+      const select =
+        document.getElementById(
+          "editTransportadora"
+        );
+
+
+      if (!select) {
+        return;
+      }
+
+
+      if (transportadoraId) {
+
+        select.value =
+          transportadoraId;
+
+        return;
+
+      }
+
+
+      const lista =
+        window.listaTransportadoras || [];
+
+
+      const encontrado =
+        lista.find(
+          function(item) {
+
+            return String(
+              item.nome || ""
+            )
+            .trim()
+            .toUpperCase() ===
+            String(
+              transportadoraNome || ""
+            )
+            .trim()
+            .toUpperCase();
+
+          }
+        );
+
+
+      if (encontrado) {
+
+        select.value =
+          encontrado.id;
+
+      }
+
+    }
+
+
+    /* =====================================================
+       ATIVAR EDIÇÃO
+       ===================================================== */
+
+    function ativarEdicao() {
+
+      if (!envioAtual) {
+
+        mostrarMensagem(
+          "NENHUM ENVIO FOI SELECIONADO.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      document.getElementById(
+        "modoConsulta"
+      ).classList.add(
+        "oculto"
+      );
+
+
+      document.getElementById(
+        "modoEdicao"
+      ).classList.add(
+        "aberto"
+      );
+
+
+      document.getElementById(
+        "avisoEdicao"
+      ).classList.add(
+        "aberto"
+      );
+
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    }
+
+
+    /* =====================================================
+       CANCELAR EDIÇÃO
+       ===================================================== */
+
+    function cancelarEdicao() {
+
+      const confirmar =
+        window.confirm(
+          "DESEJA CANCELAR A EDIÇÃO? TODAS AS ALTERAÇÕES NÃO SALVAS SERÃO DESCARTADAS."
+        );
+
+
+      if (!confirmar) {
+        return;
+      }
+
+
+      cancelarEdicaoInterna();
+
+
+      if (envioAtual) {
+
+        preencherCamposEdicao(
+          envioAtual
+        );
+
+      }
+
+    }
+
+
+    function cancelarEdicaoInterna() {
+
+      document.getElementById(
+        "modoConsulta"
+      ).classList.remove(
+        "oculto"
+      );
+
+
+      document.getElementById(
+        "modoEdicao"
+      ).classList.remove(
+        "aberto"
+      );
+
+
+      document.getElementById(
+        "avisoEdicao"
+      ).classList.remove(
+        "aberto"
+      );
+
+    }
+
+
+    /* =====================================================
+       SALVAR ALTERAÇÕES
+       ===================================================== */
+
+    async function salvarAlteracoes() {
+
+      if (!envioAtual) {
+
+        mostrarMensagem(
+          "NENHUM ENVIO FOI SELECIONADO.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      const botao =
+        document.getElementById(
+          "btnSalvar"
+        );
+
+
+      const nf =
+        String(
+          document.getElementById(
+            "editNF"
+          ).value || ""
+        ).trim();
+
+
+      const clienteId =
+        document.getElementById(
+          "editCliente"
+        ).value;
+
+
+      const transportadoraId =
+        document.getElementById(
+          "editTransportadora"
+        ).value;
+
+
+      const cidade =
+        String(
+          document.getElementById(
+            "editCidade"
+          ).value || ""
+        ).trim();
+
+
+      const uf =
+        String(
+          document.getElementById(
+            "editUF"
+          ).value || ""
+        ).trim()
+        .toUpperCase();
+
+
+      const valorTexto =
+        document.getElementById(
+          "editValor"
+        ).value;
+
+
+      const volumesTexto =
+        document.getElementById(
+          "editVolumes"
+        ).value;
+
+
+      const pesoTexto =
+        document.getElementById(
+          "editPeso"
+        ).value;
+
+
+      const dataEnvio =
+        document.getElementById(
+          "editDataEnvio"
+        ).value || null;
+
+
+      const previsao =
+        document.getElementById(
+          "editPrevisao"
+        ).value || null;
+
+
+      const status =
+        normalizarStatus(
+          document.getElementById(
+            "editStatus"
+          ).value
+        );
+
+
+      const dataEntrega =
+        document.getElementById(
+          "editDataEntrega"
+        ).value || null;
+
+
+      const confirmacaoEntrega =
+        String(
+          document.getElementById(
+            "editConfirmacao"
+          ).value || ""
+        ).trim();
+
+
+      const dataContato =
+        document.getElementById(
+          "editDataContato"
+        ).value || null;
+
+
+      const observacao =
+        document.getElementById(
+          "editObservacao"
+        ).value || null;
+
+
+      const observacaoContato =
+        document.getElementById(
+          "editObservacaoContato"
+        ).value || null;
+
+
+      if (!nf) {
+
+        mostrarMensagem(
+          "INFORME O NÚMERO DA NF.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      if (!clienteId) {
+
+        mostrarMensagem(
+          "PESQUISE E SELECIONE UM CLIENTE PELO CÓDIGO OU NOME.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      if (!transportadoraId) {
+
+        mostrarMensagem(
+          "SELECIONE UMA TRANSPORTADORA.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      if (!cidade) {
+
+        mostrarMensagem(
+          "INFORME A CIDADE.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      if (!uf) {
+
+        mostrarMensagem(
+          "INFORME A UF.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      const valor =
+        valorTexto === ""
+          ? 0
+          : Number(
+              valorTexto
+            );
+
+
+      const volumes =
+        volumesTexto === ""
+          ? 1
+          : Number(
+              volumesTexto
+            );
+
+
+      const peso =
+        pesoTexto === ""
+          ? 0
+          : Number(
+              pesoTexto
+            );
+
+
+      if (
+        isNaN(valor) ||
+        valor < 0
+      ) {
+
+        mostrarMensagem(
+          "INFORME UM VALOR VÁLIDO PARA A NF.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      if (
+        isNaN(volumes) ||
+        volumes < 1
+      ) {
+
+        mostrarMensagem(
+          "INFORME UMA QUANTIDADE VÁLIDA DE VOLUMES.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      if (
+        isNaN(peso) ||
+        peso < 0
+      ) {
+
+        mostrarMensagem(
+          "INFORME UM PESO VÁLIDO.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      if (
+        dataEntrega &&
+        status !== "ENTREGUE"
+      ) {
+
+        const confirmar =
+          window.confirm(
+            "FOI INFORMADA UMA DATA DE ENTREGA, MAS O STATUS NÃO ESTÁ COMO ENTREGUE. DESEJA CONTINUAR?"
+          );
+
+
+        if (!confirmar) {
+          return;
+        }
+
+      }
+
+
+      const cliente =
+        (window.listaClientes || [])
+        .find(
+          function(item) {
+
+            return String(
+              item.id
+            ) ===
+            String(
+              clienteId
+            );
+
+          }
+        );
+
+
+      const transportadora =
+        (window.listaTransportadoras || [])
+        .find(
+          function(item) {
+
+            return String(
+              item.id
+            ) ===
+            String(
+              transportadoraId
+            );
+
+          }
+        );
+
+
+      if (!cliente) {
+
+        mostrarMensagem(
+          "CLIENTE SELECIONADO NÃO FOI ENCONTRADO.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      if (!transportadora) {
+
+        mostrarMensagem(
+          "TRANSPORTADORA SELECIONADA NÃO FOI ENCONTRADA.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      const statusAnterior =
+        normalizarStatus(
+          envioAtual.status
+        );
+
+
+      const houveMudancaStatus =
+        statusAnterior !==
+        status;
+
+
+      const confirmar =
+        window.confirm(
+          "DESEJA REALMENTE SALVAR AS ALTERAÇÕES DESTE ENVIO?"
+        );
+
+
+      if (!confirmar) {
+        return;
+      }
+
+
+      try {
+
+        botao.disabled =
+          true;
+
+
+        botao.textContent =
+          "💾 SALVANDO...";
+
+
+        mostrarLoading(
+          "SALVANDO ALTERAÇÕES..."
+        );
+
+
+        const dadosAtualizacao = {
+
+          nf:
+            nf,
+
+          cliente_id:
+            clienteId,
+
+          cliente_nome:
+            cliente.nome,
+
+          cidade:
+            cidade,
+
+          uf:
+            uf,
+
+          transportadora_id:
+            transportadoraId,
+
+          transportadora_nome:
+            transportadora.nome,
+
+          valor:
+            valor,
+
+          peso:
+            peso,
+
+          volumes:
+            Math.round(
+              volumes
+            ),
+
+          data_envio:
+            dataEnvio,
+
+          previsao:
+            previsao,
+
+          status:
+            status,
+
+          data_entrega:
+            dataEntrega,
+
+          observacao:
+            observacao,
+
+          atualizacao:
+            new Date().toISOString(),
+
+          confirmacao_entrega:
+            confirmacaoEntrega || null,
+
+          data_contato:
+            dataContato
+              ? new Date(
+                  dataContato
+                ).toISOString()
+              : null,
+
+          observacao_contato:
+            observacaoContato,
+
+          atualizado_em:
+            new Date().toISOString()
+
+        };
+
+
+        const atualizacao =
+          await supabaseClient
+            .from("envios")
+            .update(
+              dadosAtualizacao
+            )
+            .eq(
+              "id",
+              envioAtual.id
+            )
+            .select("*")
+            .single();
+
+
+        if (atualizacao.error) {
+          throw atualizacao.error;
+        }
+
+
+        const envioSalvo =
+          atualizacao.data;
+
+
+        if (houveMudancaStatus) {
+
+          const registroHistorico = {
+
+            envio_id:
+              envioAtual.id,
+
+            status_anterior:
+              statusAnterior ||
+              null,
+
+            status_novo:
+              status,
+
+            observacao:
+              "STATUS ALTERADO PELA PESQUISA NF.",
+
+            usuario_id:
+              usuarioAtual
+                ? usuarioAtual.id
+                : null
+
+          };
+
+
+          const historico =
+            await supabaseClient
+              .from("historico_envios")
+              .insert(
+                registroHistorico
+              );
+
+
+          if (historico.error) {
+
+            console.error(
+              "Erro ao registrar histórico:",
+              historico.error
+            );
+
+          }
+
+        }
+
+
+        envioAtual =
+          envioSalvo;
+
+
+        esconderLoading();
+
+
+        botao.disabled =
+          false;
+
+
+        botao.textContent =
+          "💾 SALVAR ALTERAÇÕES";
+
+
+        cancelarEdicaoInterna();
+
+
+        mostrarResultado(
+          envioSalvo
+        );
+
+
+        mostrarMensagem(
+          "ALTERAÇÕES SALVAS COM SUCESSO.",
+          "sucesso"
+        );
+
+
+      }
+
+      catch (erro) {
+
+        console.error(
+          "Erro ao salvar:",
+          erro
+        );
+
+
+        esconderLoading();
+
+
+        botao.disabled =
+          false;
+
+
+        botao.textContent =
+          "💾 SALVAR ALTERAÇÕES";
+
+
+        mostrarMensagem(
+          obterMensagemErroSalvar(
+            erro
+          ),
+          "erro"
+        );
+
+      }
+
+    }
+
+
+    /* =====================================================
+       EXCLUIR ENVIO
+       ===================================================== */
+
+    async function excluirEnvio() {
+
+      if (!envioAtual || !envioAtual.id) {
+
+        mostrarMensagem(
+          "NENHUM ENVIO FOI SELECIONADO PARA EXCLUSÃO.",
+          "erro"
+        );
+
+        return;
+
+      }
+
+
+      const nf =
+        String(
+          envioAtual.nf || ""
+        ).trim();
+
+
+      const confirmar =
+        window.confirm(
+          "ATENÇÃO!\n\n" +
+          "VOCÊ ESTÁ PRESTES A EXCLUIR O ENVIO DA NF " +
+          nf +
+          ".\n\n" +
+          "ESTA AÇÃO NÃO PODERÁ SER DESFEITA.\n\n" +
+          "DESEJA REALMENTE EXCLUIR ESTE ENVIO?"
+        );
+
+
+      if (!confirmar) {
+        return;
+      }
+
+
+      const confirmarFinal =
+        window.confirm(
+          "ÚLTIMA CONFIRMAÇÃO!\n\n" +
+          "CONFIRMA A EXCLUSÃO DEFINITIVA DA NF " +
+          nf +
+          "?"
+        );
+
+
+      if (!confirmarFinal) {
+        return;
+      }
+
+
+      const botao =
+        document.getElementById(
+          "btnExcluir"
+        );
+
+
+      try {
+
+        if (botao) {
+
+          botao.disabled =
+            true;
+
+          botao.textContent =
+            "🗑️ EXCLUINDO...";
+
+        }
+
+
+        mostrarLoading(
+          "EXCLUINDO NF " +
+          nf +
+          "..."
+        );
+
+
+        const exclusao =
+          await supabaseClient
+            .from("envios")
+            .delete()
+            .eq(
+              "id",
+              envioAtual.id
+            );
+
+
+        if (exclusao.error) {
+          throw exclusao.error;
+        }
+
+
+        esconderLoading();
+
+
+        envioAtual =
+          null;
+
+
+        document.getElementById(
+          "resultado"
+        ).classList.remove(
+          "aberto"
+        );
+
+
+        document.getElementById(
+          "semResultado"
+        ).style.display =
+          "block";
+
+
+        document.getElementById(
+          "campoNF"
+        ).value =
+          "";
+
+
+        cancelarEdicaoInterna();
+
+
+        mostrarMensagem(
+          "ENVIO DA NF " +
+          nf +
+          " EXCLUÍDO COM SUCESSO.",
+          "sucesso"
+        );
+
+
+        document.getElementById(
+          "campoNF"
+        ).focus();
+
+
+        if (botao) {
+
+          botao.disabled =
+            false;
+
+          botao.textContent =
+            "🗑️ EXCLUIR ENVIO";
+
+        }
+
+      }
+
+      catch (erro) {
+
+        console.error(
+          "Erro ao excluir envio:",
+          erro
+        );
+
+
+        esconderLoading();
+
+
+        if (botao) {
+
+          botao.disabled =
+            false;
+
+          botao.textContent =
+            "🗑️ EXCLUIR ENVIO";
+
+        }
+
+
+        mostrarMensagem(
+          obterMensagemErroExcluir(
+            erro
+          ),
+          "erro"
+        );
+
+      }
+
+    }
+
+
+    /* =====================================================
+       STATUS
+       ===================================================== */
+
+    function normalizarStatus(status) {
+
+      return String(
+        status || ""
+      )
+      .trim()
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      );
+
+    }
+
+
+    function atualizarStatus(status) {
+
+      const elemento =
+        document.getElementById(
+          "resultadoStatus"
+        );
+
+
+      const texto =
+        normalizarStatus(
+          status
+        );
+
+
+      let classe =
+        "status-padrao";
+
+
+      let icone =
+        "📌";
+
+
+      if (
+        texto ===
+        "COLETADO"
+      ) {
+
+        classe =
+          "status-coletado";
+
+        icone =
+          "📦";
+
+      }
+
+      else if (
+        texto ===
+        "EM TRANSITO"
+      ) {
+
+        classe =
+          "status-transito";
+
+        icone =
+          "🚚";
+
+      }
+
+      else if (
+        texto ===
+        "ENTREGUE"
+      ) {
+
+        classe =
+          "status-entregue";
+
+        icone =
+          "✅";
+
+      }
+
+      else if (
+        texto ===
+        "ATRASADO"
+      ) {
+
+        classe =
+          "status-atrasado";
+
+        icone =
+          "⚠️";
+
+      }
+
+
+      elemento.className =
+        "status " +
+        classe;
+
+
+      elemento.textContent =
+        icone +
+        " " +
+        (
+          texto ||
+          "SEM STATUS"
+        );
+
+    }
+
+
+    /* =====================================================
+       ALERTA
+       ===================================================== */
+
+    function atualizarAlerta(envio) {
+
+      const elemento =
+        document.getElementById(
+          "alertaEntrega"
+        );
+
+
+      elemento.className =
+        "alerta-entrega";
+
+
+      elemento.textContent =
+        "";
+
+
+      const status =
+        normalizarStatus(
+          envio.status
+        );
+
+
+      const dataEntrega =
+        envio.data_entrega;
+
+
+      const previsao =
+        envio.previsao;
+
+
+      if (
+        status ===
+        "ENTREGUE" ||
+        dataEntrega
+      ) {
+
+        elemento.classList.add(
+          "aberto",
+          "alerta-verde"
+        );
+
+
+        elemento.textContent =
+          "🟢 ENVIO ENTREGUE.";
+
+
+        return;
+
+      }
+
+
+      if (!previsao) {
+
+        elemento.classList.add(
+          "aberto",
+          "alerta-neutro"
+        );
+
+
+        elemento.textContent =
+          "⚪ ENVIO SEM PREVISÃO DE ENTREGA.";
+
+
+        return;
+
+      }
+
+
+      const data =
+        criarData(
+          previsao
+        );
+
+
+      if (!data) {
+        return;
+      }
+
+
+      const hoje =
+        new Date();
+
+
+      hoje.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+
+      data.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+
+      if (
+        data.getTime() ===
+        hoje.getTime()
+      ) {
+
+        elemento.classList.add(
+          "aberto",
+          "alerta-amarelo"
+        );
+
+
+        elemento.textContent =
+          "🟡 PREVISÃO DE ENTREGA PARA HOJE.";
+
+
+        return;
+
+      }
+
+
+      if (
+        data.getTime() <
+        hoje.getTime()
+      ) {
+
+        elemento.classList.add(
+          "aberto",
+          "alerta-vermelho"
+        );
+
+
+        elemento.textContent =
+          "🔴 A PREVISÃO DE ENTREGA ESTÁ ATRASADA.";
+
+
+        return;
+
+      }
+
+
+      elemento.classList.add(
+        "aberto",
+        "alerta-azul"
+      );
+
+
+      elemento.textContent =
+        "🔵 ENVIO DENTRO DO PRAZO PREVISTO.";
+
+    }
+
+
+    /* =====================================================
+       DATAS
+       ===================================================== */
+
+    function criarData(valor) {
+
+      if (!valor) {
+        return null;
+      }
+
+
+      const texto =
+        String(
+          valor
+        );
+
+
+      if (
+        /^\d{4}-\d{2}-\d{2}$/.test(
+          texto
+        )
+      ) {
+
+        const partes =
+          texto.split("-");
+
+
+        return new Date(
+          Number(
+            partes[0]
+          ),
+          Number(
+            partes[1]
+          ) - 1,
+          Number(
+            partes[2]
+          )
+        );
+
+      }
+
+
+      const data =
+        new Date(
+          valor
+        );
+
+
+      if (
+        isNaN(
+          data.getTime()
+        )
+      ) {
+
+        return null;
+
+      }
+
+
+      return data;
+
+    }
+
+
+    function formatarData(valor) {
+
+      const data =
+        criarData(
+          valor
+        );
+
+
+      if (!data) {
+        return "-";
+      }
+
+
+      return String(
+        data.getDate()
+      ).padStart(
+        2,
+        "0"
+      ) +
+      "/" +
+      String(
+        data.getMonth() + 1
+      ).padStart(
+        2,
+        "0"
+      ) +
+      "/" +
+      data.getFullYear();
+
+    }
+
+
+    function formatarDataHora(valor) {
+
+      const data =
+        criarData(
+          valor
+        );
+
+
+      if (!data) {
+        return "-";
+      }
+
+
+      return String(
+        data.getDate()
+      ).padStart(
+        2,
+        "0"
+      ) +
+      "/" +
+      String(
+        data.getMonth() + 1
+      ).padStart(
+        2,
+        "0"
+      ) +
+      "/" +
+      data.getFullYear() +
+      " " +
+      String(
+        data.getHours()
+      ).padStart(
+        2,
+        "0"
+      ) +
+      ":" +
+      String(
+        data.getMinutes()
+      ).padStart(
+        2,
+        "0"
+      );
+
+    }
+
+
+    function normalizarDataInput(valor) {
+
+      if (!valor) {
+        return "";
+      }
+
+
+      const texto =
+        String(
+          valor
+        );
+
+
+      if (
+        /^\d{4}-\d{2}-\d{2}$/.test(
+          texto
+        )
+      ) {
+
+        return texto;
+
+      }
+
+
+      const data =
+        new Date(
+          valor
+        );
+
+
+      if (
+        isNaN(
+          data.getTime()
+        )
+      ) {
+
+        return "";
+
+      }
+
+
+      return data.getFullYear() +
+        "-" +
+        String(
+          data.getMonth() + 1
+        ).padStart(
+          2,
+          "0"
+        ) +
+        "-" +
+        String(
+          data.getDate()
+        ).padStart(
+          2,
+          "0"
+        );
+
+    }
+
+
+    function normalizarDataHoraInput(valor) {
+
+      if (!valor) {
+        return "";
+      }
+
+
+      const data =
+        new Date(
+          valor
+        );
+
+
+      if (
+        isNaN(
+          data.getTime()
+        )
+      ) {
+
+        return "";
+
+      }
+
+
+      return data.getFullYear() +
+        "-" +
+        String(
+          data.getMonth() + 1
+        ).padStart(
+          2,
+          "0"
+        ) +
+        "-" +
+        String(
+          data.getDate()
+        ).padStart(
+          2,
+          "0"
+        ) +
+        "T" +
+        String(
+          data.getHours()
+        ).padStart(
+          2,
+          "0"
+        ) +
+        ":" +
+        String(
+          data.getMinutes()
+        ).padStart(
+          2,
+          "0"
+        );
+
+    }
+
+
+    /* =====================================================
+       VALOR
+       ===================================================== */
+
+    function formatarValor(valor) {
+
+      const numero =
+        Number(
+          valor || 0
+        );
+
+
+      return numero.toLocaleString(
+        "pt-BR",
+        {
+          style:
+            "currency",
+
+          currency:
+            "BRL"
+        }
+      );
+
+    }
+
+
+    /* =====================================================
+       MENSAGENS
+       ===================================================== */
+
+    function mostrarMensagem(
+      texto,
+      tipo
+    ) {
+
+      const elemento =
+        document.getElementById(
+          "mensagem"
+        );
+
+
+      elemento.textContent =
+        texto;
+
+
+      elemento.className =
+        "mensagem " +
+        tipo;
+
+
+      elemento.style.display =
+        "block";
+
+
+      clearTimeout(
+        window.timerMensagem
+      );
+
+
+      window.timerMensagem =
+        setTimeout(
+          function() {
+
+            elemento.style.display =
+              "none";
+
+          },
+          5000
+        );
+
+    }
+
+
+    function limparMensagem() {
+
+      const elemento =
+        document.getElementById(
+          "mensagem"
+        );
+
+
+      elemento.textContent =
+        "";
+
+
+      elemento.className =
+        "mensagem";
+
+
+      elemento.style.display =
+        "none";
+
+    }
+
+
+    /* =====================================================
+       ERROS
+       ===================================================== */
+
+    function obterMensagemErro(
+      erro
+    ) {
+
+      if (!erro) {
+
+        return "OCORREU UM ERRO AO PESQUISAR A NF.";
+
+      }
+
+
+      if (erro.message) {
+
+        return (
+          "ERRO AO PESQUISAR A NF: " +
+          erro.message
+        ).toUpperCase();
+
+      }
+
+
+      return "OCORREU UM ERRO AO PESQUISAR A NF.";
+
+    }
+
+
+    function obterMensagemErroSalvar(
+      erro
+    ) {
+
+      if (!erro) {
+
+        return "OCORREU UM ERRO AO SALVAR AS ALTERAÇÕES.";
+
+      }
+
+
+      if (
+        erro.code ===
+        "23505"
+      ) {
+
+        return "A NF INFORMADA JÁ ESTÁ CADASTRADA EM OUTRO ENVIO.";
+
+      }
+
+
+      if (erro.message) {
+
+        return (
+          "ERRO AO SALVAR: " +
+          erro.message
+        ).toUpperCase();
+
+      }
+
+
+      return "OCORREU UM ERRO AO SALVAR AS ALTERAÇÕES.";
+
+    }
+
+
+    function obterMensagemErroExcluir(
+      erro
+    ) {
+
+      if (!erro) {
+
+        return "OCORREU UM ERRO AO EXCLUIR O ENVIO.";
+
+      }
+
+
+      if (erro.code === "23503") {
+
+        return (
+          "NÃO FOI POSSÍVEL EXCLUIR O ENVIO PORQUE EXISTEM REGISTROS RELACIONADOS A ELE."
+        );
+
+      }
+
+
+      if (erro.code === "42501") {
+
+        return (
+          "VOCÊ NÃO POSSUI PERMISSÃO PARA EXCLUIR ESTE ENVIO."
+        );
+
+      }
+
+
+      if (erro.message) {
+
+        return (
+          "ERRO AO EXCLUIR: " +
+          erro.message
+        ).toUpperCase();
+
+      }
+
+
+      return "OCORREU UM ERRO AO EXCLUIR O ENVIO.";
+
+    }
+
+
+    /* =====================================================
+       LOADING
+       ===================================================== */
+
+    function mostrarLoading(
+      texto
+    ) {
+
+      const elemento =
+        document.getElementById(
+          "loading"
+        );
+
+
+      const textoElemento =
+        document.getElementById(
+          "loadingText"
+        );
+
+
+      if (textoElemento) {
+
+        textoElemento.textContent =
+          texto ||
+          "CARREGANDO...";
+
+      }
+
+
+      if (elemento) {
+
+        elemento.style.display =
+          "flex";
+
+      }
+
+    }
+
+
+    function esconderLoading() {
+
+      const elemento =
+        document.getElementById(
+          "loading"
+        );
+
+
+      if (elemento) {
+
+        elemento.style.display =
+          "none";
+
+      }
+
+    }
+
+
+    /* =====================================================
+       RESULTADO
+       ===================================================== */
+
+    function mostrarSemResultado() {
+
+      document.getElementById(
+        "resultado"
+      ).classList.remove(
+        "aberto"
+      );
+
+
+      document.getElementById(
+        "semResultado"
+      ).style.display =
+        "block";
+
+    }
+
+
+    function esconderResultado() {
+
+      document.getElementById(
+        "resultado"
+      ).classList.remove(
+        "aberto"
+      );
+
+    }
+
+
+    /* =====================================================
+       NAVEGAÇÃO
+       ===================================================== */
+
+    function irPara(
+      pagina
+    ) {
+
+      if (!pagina) {
+        return;
+      }
+
+
+      const separador =
+        pagina.includes("?")
+          ? "&"
+          : "?";
+
+
+      window.location.href =
+        pagina +
+        separador +
+        "_v=" +
+        Date.now();
+
+    }
+
+
+    /* =====================================================
+       LOGIN
+       ===================================================== */
+
+    function redirecionarLogin() {
+
+      window.location.replace(
+        "index.html"
+      );
+
+    }
+
+
+    /* =====================================================
+       SAIR
+       ===================================================== */
+
+    async function sair() {
+
+      const confirmar =
+        window.confirm(
+          "DESEJA REALMENTE SAIR DO BIRILOG?"
+        );
+
+
+      if (!confirmar) {
+        return;
+      }
+
+
+      const botao =
+        document.getElementById(
+          "botaoSair"
+        );
+
+
+      if (botao) {
+
+        botao.disabled =
+          true;
+
+
+        botao.textContent =
+          "SAINDO...";
+
+      }
+
+
+      try {
+
+        await supabaseClient.auth.signOut();
+
+      }
+
+      catch (erro) {
+
+        console.error(
+          "Erro ao sair:",
+          erro
+        );
+
+      }
+
+
+      redirecionarLogin();
+
+    }
+
+
+    /* =====================================================
+       ENTER
+       ===================================================== */
+
+    document
+      .getElementById(
+        "campoNF"
+      )
+      .addEventListener(
+        "keydown",
+        function(evento) {
+
+          if (
+            evento.key ===
+            "Enter"
+          ) {
+
+            evento.preventDefault();
+
+            pesquisarNF();
+
+          }
+
+        }
+      );
+
+
+    /* =====================================================
+       LIMPAR AO DIGITAR
+       ===================================================== */
+
+    document
+      .getElementById(
+        "campoNF"
+      )
+      .addEventListener(
+        "input",
+        function() {
+
+          esconderResultado();
+
+          limparMensagem();
+
+        }
+      );
+
+
+    /* =====================================================
+       ATUALIZAÇÃO AUTOMÁTICA DA CIDADE/UF
+       ===================================================== */
+
+    document
+      .getElementById(
+        "editCliente"
+      )
+      .addEventListener(
+        "change",
+        function() {
+
+          const opcao =
+            this.options[
+              this.selectedIndex
+            ];
+
+
+          if (!opcao) {
+            return;
+          }
+
+
+          const cidade =
+            opcao.dataset.cidade ||
+            "";
+
+
+          const uf =
+            opcao.dataset.uf ||
+            "";
+
+
+          if (cidade) {
+
+            document.getElementById(
+              "editCidade"
+            ).value =
+              cidade;
+
+          }
+
+
+          if (uf) {
+
+            document.getElementById(
+              "editUF"
+            ).value =
+              String(
+                uf
+              ).toUpperCase();
+
+          }
+
+        }
+      );
+
+
+    /* =====================================================
+       STATUS ENTREGUE
+       ===================================================== */
+
+    document
+      .getElementById(
+        "editStatus"
+      )
+      .addEventListener(
+        "change",
+        function() {
+
+          if (
+            normalizarStatus(
+              this.value
+            ) ===
+            "ENTREGUE"
+          ) {
+
+            const campo =
+              document.getElementById(
+                "editDataEntrega"
+              );
+
+
+            if (
+              !campo.value
+            ) {
+
+              const hoje =
+                new Date();
+
+
+              campo.value =
+                hoje.getFullYear() +
+                "-" +
+                String(
+                  hoje.getMonth() + 1
+                ).padStart(
+                  2,
+                  "0"
+                ) +
+                "-" +
+                String(
+                  hoje.getDate()
+                ).padStart(
+                  2,
+                  "0"
+                );
+
+            }
+
+          }
+
+        }
+      );
+
+
+    /* =====================================================
+       MONITORAR SESSÃO
+       ===================================================== */
+
+    supabaseClient.auth.onAuthStateChange(
+      function(
+        evento,
+        session
+      ) {
+
+        if (
+          evento ===
+          "SIGNED_OUT"
+        ) {
+
+          redirecionarLogin();
+
+        }
+
+      }
+    );
+
+  </script>
+
+</body>
+
+</html>
+```
