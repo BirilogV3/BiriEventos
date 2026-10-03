@@ -79,9 +79,9 @@
             <div class="campo"><label for="uf">UF *</label><select id="uf" required><option value="">SELECIONE</option><option value="TO">TO</option><option value="PA">PA</option><option value="MA">MA</option><option value="GO">GO</option><option value="DF">DF</option><option value="OUTRO">OUTRO</option></select></div>
             <div class="campo"><label for="localEvento">LOCAL DO EVENTO</label><input id="localEvento" type="text" maxlength="150"></div>
             <div class="campo"><label for="dataInicio">INÍCIO DO EVENTO *</label><input id="dataInicio" type="date" required></div>
-            <div class="campo"><label for="dataFim">TÉRMINO DO EVENTO *</label><input id="dataFim" type="date" required></div>
+            <div class="campo"><label id="labelDataFim" for="dataFim">TÉRMINO DO EVENTO *</label><input id="dataFim" type="date" required></div>
             <div class="campo"><label for="dataRetirada">RETIRADA PREVISTA *</label><input id="dataRetirada" type="date" required></div>
-            <div class="campo"><label for="dataDevolucao">DEVOLUÇÃO PREVISTA *</label><input id="dataDevolucao" type="date" required></div>
+            <div class="campo"><label id="labelDataDevolucao" for="dataDevolucao">DEVOLUÇÃO PREVISTA *</label><input id="dataDevolucao" type="date" required></div>
              <div class="campo"><label>TIPO DE DEVOLUÇÃO</label><label class="opcao-indeterminado" for="tempoIndeterminado"><input id="tempoIndeterminado" type="checkbox"> TEMPO INDETERMINADO</label></div>
             <div class="campo inteiro"><label for="observacoes">OBSERVAÇÕES</label><textarea id="observacoes" maxlength="800" placeholder="INFORME DETALHES IMPORTANTES PARA A RESERVA."></textarea></div>
           </div>
@@ -166,9 +166,13 @@
 
     function atualizarTempoIndeterminado(){
       const marcado=$("tempoIndeterminado").checked;
+      $("dataFim").disabled=marcado;
+      $("dataFim").required=!marcado;
       $("dataDevolucao").disabled=marcado;
       $("dataDevolucao").required=!marcado;
-      if(marcado)$("dataDevolucao").value="";
+      $("labelDataFim").textContent=marcado?"TÉRMINO DO EVENTO":"TÉRMINO DO EVENTO *";
+      $("labelDataDevolucao").textContent=marcado?"DEVOLUÇÃO PREVISTA":"DEVOLUÇÃO PREVISTA *";
+      if(marcado){$("dataFim").value="";$("dataDevolucao").value="";}
     }
 
     function limparFormulario(){
@@ -189,9 +193,9 @@
 
     function dadosFormulario(){
       const tempoIndeterminado=$("tempoIndeterminado").checked;
-      const dados={solicitante_id:usuario.id,evento_nome:maiusculo($("eventoNome").value),responsavel_retirada:maiusculo($("responsavel").value)||null,cidade:maiusculo($("cidade").value)||null,uf:$("uf").value,local_evento:maiusculo($("localEvento").value)||null,data_inicio:$("dataInicio").value,data_fim:$("dataFim").value,data_retirada_prevista:$("dataRetirada").value,data_devolucao_prevista:tempoIndeterminado?null:$("dataDevolucao").value,tempo_indeterminado:tempoIndeterminado,observacoes:maiusculo($("observacoes").value)||null};
-      if(!dados.evento_nome||!dados.responsavel_retirada||!dados.cidade||!dados.uf||!dados.data_inicio||!dados.data_fim||!dados.data_retirada_prevista||(!tempoIndeterminado&&!dados.data_devolucao_prevista))throw new Error("PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS.");
-      if(dados.data_fim<dados.data_inicio)throw new Error("O TÉRMINO DO EVENTO NÃO PODE SER ANTERIOR AO INÍCIO.");
+      const dados={solicitante_id:usuario.id,evento_nome:maiusculo($("eventoNome").value),responsavel_retirada:maiusculo($("responsavel").value)||null,cidade:maiusculo($("cidade").value)||null,uf:$("uf").value,local_evento:maiusculo($("localEvento").value)||null,data_inicio:$("dataInicio").value,data_fim:tempoIndeterminado?null:$("dataFim").value,data_retirada_prevista:$("dataRetirada").value,data_devolucao_prevista:tempoIndeterminado?null:$("dataDevolucao").value,tempo_indeterminado:tempoIndeterminado,observacoes:maiusculo($("observacoes").value)||null};
+      if(!dados.evento_nome||!dados.responsavel_retirada||!dados.cidade||!dados.uf||!dados.data_inicio||!dados.data_retirada_prevista||(!tempoIndeterminado&&(!dados.data_fim||!dados.data_devolucao_prevista)))throw new Error("PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS.");
+      if(!tempoIndeterminado&&dados.data_fim<dados.data_inicio)throw new Error("O TÉRMINO DO EVENTO NÃO PODE SER ANTERIOR AO INÍCIO.");
       if(!tempoIndeterminado&&dados.data_devolucao_prevista<dados.data_retirada_prevista)throw new Error("A DEVOLUÇÃO NÃO PODE SER ANTERIOR À RETIRADA.");
       if(!itensSelecionados.length)throw new Error("ADICIONE PELO MENOS UM MATERIAL.");return dados;
     }
