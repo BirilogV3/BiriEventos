@@ -700,6 +700,51 @@
         font-size: 1.25rem;
       }
     }
+
+    [hidden] { display: none !important; }
+    .topbar-acoes { display: flex; align-items: center; gap: 12px; }
+    .sino-aprovacoes {
+      position: relative; display: inline-flex; align-items: center; gap: 8px;
+      min-height: 42px; padding: 10px 12px; border: 1px solid #fde68a;
+      border-radius: 10px; color: #92400e; background: #fffbeb;
+      text-decoration: none; font-size: .76rem; font-weight: 800;
+    }
+    .sino-aprovacoes:focus-visible, .aviso-botao:focus-visible {
+      outline: 3px solid #60a5fa; outline-offset: 3px;
+    }
+    .contador-aprovacoes {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 25px; min-height: 25px; padding: 3px 7px;
+      border-radius: 999px; background: #dc2626; color: #fff;
+      font-size: .7rem; font-weight: 800;
+    }
+    .menu-contador { margin-left: auto; }
+    .aviso-aprovacoes {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 18px; margin-bottom: 22px; padding: 20px;
+      border: 1px solid #fcd34d; border-left: 5px solid #f59e0b;
+      border-radius: 14px; background: #fffbeb; color: #92400e;
+    }
+    .aviso-aprovacoes.erro { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
+    .aviso-aprovacoes h3 { font-size: .98rem; }
+    .aviso-aprovacoes p { margin-top: 7px; font-size: .78rem; line-height: 1.6; }
+    .aviso-acoes { display: flex; flex-wrap: wrap; gap: 9px; flex-shrink: 0; }
+    .aviso-botao {
+      display: inline-flex; justify-content: center; align-items: center;
+      min-height: 42px; padding: 10px 14px; border: 1px solid #fcd34d;
+      border-radius: 9px; background: #fff; color: #92400e;
+      text-decoration: none; cursor: pointer; font-size: .73rem; font-weight: 800;
+    }
+    .aviso-botao.principal { border-color: #d97706; background: #d97706; color: #fff; }
+    .aviso-botao:disabled { opacity: .6; cursor: wait; }
+    @media (max-width: 1080px) { .aviso-aprovacoes { align-items: flex-start; flex-direction: column; } }
+    @media (max-width: 580px) {
+      .sino-texto { display: none; }
+      .sino-aprovacoes { min-width: 42px; padding: 8px; }
+      .topbar-acoes { gap: 6px; }
+      .aviso-acoes { width: 100%; }
+      .aviso-acoes > * { flex: 1; }
+    }
   </style>
 </head>
 
@@ -756,12 +801,13 @@
         Solicitações
       </a>
 
-      <a class="menu-item" href="aprovacoes.html">
+      <a id="menuAprovacoes" class="menu-item" href="aprovacoes.html" hidden>
         <span class="menu-icone" aria-hidden="true">✓</span>
         Aprovações
+        <span id="contadorMenuAprovacoes" class="contador-aprovacoes menu-contador" hidden></span>
       </a>
 
-      <a class="menu-item" href="usuarios.html">
+      <a id="menuUsuarios" class="menu-item" href="usuarios.html" hidden>
         <span class="menu-icone" aria-hidden="true">👥</span>
         Usuários
       </a>
@@ -799,9 +845,15 @@
         <p>Visão geral do controle de materiais e eventos</p>
       </div>
 
-      <div class="status-sistema">
-        <span class="status-ponto" aria-hidden="true"></span>
-        SISTEMA ONLINE
+      <div class="topbar-acoes">
+        <a id="sinoAprovacoes" class="sino-aprovacoes" href="aprovacoes.html" aria-label="Consultar solicitações para aprovação" hidden>
+          <span aria-hidden="true">🔔</span><span class="sino-texto">APROVAÇÕES</span>
+          <span id="contadorSinoAprovacoes" class="contador-aprovacoes" hidden></span>
+        </a>
+        <div class="status-sistema">
+          <span class="status-ponto" aria-hidden="true"></span>
+          SISTEMA ONLINE
+        </div>
       </div>
     </header>
 
@@ -812,6 +864,18 @@
       </section>
 
       <div id="erroPainel" class="erro-painel" role="alert"></div>
+
+      <section id="avisoAprovacoes" class="aviso-aprovacoes" aria-labelledby="tituloAvisoAprovacoes" hidden>
+        <div role="status" aria-live="polite" aria-atomic="true">
+          <h3 id="tituloAvisoAprovacoes">SOLICITAÇÕES AGUARDANDO APROVAÇÃO</h3>
+          <p id="textoAvisoAprovacoes"></p>
+          <p id="atualizacaoAprovacoes"></p>
+        </div>
+        <div class="aviso-acoes">
+          <a class="aviso-botao principal" href="aprovacoes.html">VER APROVAÇÕES</a>
+          <button id="atualizarAprovacoes" class="aviso-botao" type="button">ATUALIZAR</button>
+        </div>
+      </section>
 
       <section class="cards" aria-label="Indicadores principais">
         <article class="card-indicador">
@@ -941,6 +1005,108 @@
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
 
+    let administradorAutenticado = false;
+    let consultaAprovacoesEmAndamento = false;
+    let totalPendentesConhecido = null;
+    let temporizadorAprovacoes = null;
+    let versaoAcessoAprovacoes = 0;
+    const avisoAprovacoes = document.getElementById("avisoAprovacoes");
+    const sinoAprovacoes = document.getElementById("sinoAprovacoes");
+    const contadorSinoAprovacoes = document.getElementById("contadorSinoAprovacoes");
+    const contadorMenuAprovacoes = document.getElementById("contadorMenuAprovacoes");
+    const tituloAvisoAprovacoes = document.getElementById("tituloAvisoAprovacoes");
+    const textoAvisoAprovacoes = document.getElementById("textoAvisoAprovacoes");
+    const atualizacaoAprovacoes = document.getElementById("atualizacaoAprovacoes");
+    const atualizarAprovacoes = document.getElementById("atualizarAprovacoes");
+
+    function configurarAcessoAprovacoes(nivel) {
+      versaoAcessoAprovacoes += 1;
+      administradorAutenticado = String(nivel || "").trim().toUpperCase() === "ADMINISTRADOR";
+      document.getElementById("menuAprovacoes").hidden = !administradorAutenticado;
+      document.getElementById("menuUsuarios").hidden = !administradorAutenticado;
+      sinoAprovacoes.hidden = !administradorAutenticado;
+      avisoAprovacoes.hidden = true;
+      contadorSinoAprovacoes.hidden = true;
+      contadorMenuAprovacoes.hidden = true;
+      totalPendentesConhecido = null;
+      if (temporizadorAprovacoes !== null) {
+        clearInterval(temporizadorAprovacoes);
+        temporizadorAprovacoes = null;
+      }
+    }
+
+    function renderizarAvisoAprovacoes(total) {
+      totalPendentesConhecido = total;
+      const possuiPendentes = total > 0;
+      contadorSinoAprovacoes.textContent = String(total);
+      contadorMenuAprovacoes.textContent = String(total);
+      contadorSinoAprovacoes.hidden = !possuiPendentes;
+      contadorMenuAprovacoes.hidden = !possuiPendentes;
+      const descricao = total === 1
+        ? "1 SOLICITAÇÃO AGUARDANDO APROVAÇÃO"
+        : `${total} SOLICITAÇÕES AGUARDANDO APROVAÇÃO`;
+      sinoAprovacoes.setAttribute("aria-label", possuiPendentes ? descricao : "NENHUMA SOLICITAÇÃO AGUARDANDO APROVAÇÃO");
+      sinoAprovacoes.title = possuiPendentes ? descricao : "NENHUMA SOLICITAÇÃO AGUARDANDO APROVAÇÃO";
+      avisoAprovacoes.classList.remove("erro");
+      avisoAprovacoes.hidden = !possuiPendentes;
+      tituloAvisoAprovacoes.textContent = descricao;
+      textoAvisoAprovacoes.textContent = "CONFIRA OS PEDIDOS E APROVE OU RECUSE CADA SOLICITAÇÃO. INCLUI OS PEDIDOS ENVIADOS SEM LOGIN.";
+      const hora = new Intl.DateTimeFormat("pt-BR", {hour: "2-digit", minute: "2-digit"}).format(new Date());
+      atualizacaoAprovacoes.textContent = `ATUALIZADO ÀS ${hora}. VERIFICAÇÃO AUTOMÁTICA A CADA 30 SEGUNDOS.`;
+    }
+
+    async function carregarAprovacoesPendentes() {
+      if (!administradorAutenticado || consultaAprovacoesEmAndamento) return;
+      const versaoConsulta = versaoAcessoAprovacoes;
+      consultaAprovacoesEmAndamento = true;
+      atualizarAprovacoes.disabled = true;
+      atualizarAprovacoes.textContent = "VERIFICANDO...";
+      try {
+        // A contagem considera o status, sem filtrar usuário ou origem do pedido.
+        const {count, error} = await clienteSupabase
+          .from("solicitacoes_reserva")
+          .select("id", {count: "exact", head: true})
+          .eq("status", "AGUARDANDO_APROVACAO");
+        if (error) throw error;
+        if (!Number.isSafeInteger(count) || count < 0) throw new Error("CONTAGEM DE SOLICITAÇÕES INDISPONÍVEL.");
+        if (!administradorAutenticado || versaoConsulta !== versaoAcessoAprovacoes) return;
+        renderizarAvisoAprovacoes(count);
+      } catch (erro) {
+        if (!administradorAutenticado || versaoConsulta !== versaoAcessoAprovacoes) return;
+        console.error("Erro ao consultar solicitações pendentes:", erro);
+        avisoAprovacoes.hidden = false;
+        avisoAprovacoes.classList.add("erro");
+        tituloAvisoAprovacoes.textContent = "NÃO FOI POSSÍVEL ATUALIZAR AS APROVAÇÕES";
+        textoAvisoAprovacoes.textContent = totalPendentesConhecido === null
+          ? "A CONTAGEM NÃO ESTÁ DISPONÍVEL. CLIQUE EM ATUALIZAR OU CONSULTE A PÁGINA DE APROVAÇÕES."
+          : `ÚLTIMA CONTAGEM: ${totalPendentesConhecido} SOLICITAÇÃO(ÕES). ESSE NÚMERO PODE ESTAR DESATUALIZADO. CONFIRA A PÁGINA DE APROVAÇÕES.`;
+        atualizacaoAprovacoes.textContent = "NOVA TENTATIVA AUTOMÁTICA EM ATÉ 30 SEGUNDOS ENQUANTO ESTA PÁGINA ESTIVER VISÍVEL.";
+        sinoAprovacoes.title = "CONTAGEM INDISPONÍVEL OU DESATUALIZADA. CONSULTAR APROVAÇÕES.";
+        sinoAprovacoes.setAttribute("aria-label", sinoAprovacoes.title);
+      } finally {
+        consultaAprovacoesEmAndamento = false;
+        atualizarAprovacoes.disabled = false;
+        atualizarAprovacoes.textContent = "ATUALIZAR";
+      }
+    }
+
+    function iniciarMonitoramentoAprovacoes() {
+      if (!administradorAutenticado || temporizadorAprovacoes !== null) return;
+      temporizadorAprovacoes = setInterval(() => {
+        if (!document.hidden) carregarAprovacoesPendentes();
+      }, 30000);
+    }
+
+    atualizarAprovacoes.addEventListener("click", carregarAprovacoesPendentes);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) carregarAprovacoesPendentes();
+    });
+    window.addEventListener("focus", carregarAprovacoesPendentes);
+    window.addEventListener("online", carregarAprovacoesPendentes);
+    window.addEventListener("pageshow", () => {
+      if (!document.hidden) carregarAprovacoesPendentes();
+    });
+
     function numero(valor) {
       return Number(valor || 0);
     }
@@ -1019,6 +1185,7 @@
     overlay.addEventListener("click", fecharMenu);
 
     botaoSair.addEventListener("click", async () => {
+      configurarAcessoAprovacoes(null);
       botaoSair.disabled = true;
       botaoSair.textContent = "SAINDO...";
 
@@ -1171,10 +1338,19 @@
         usuarioEmail.title = email;
         usuarioAvatar.textContent = email.charAt(0).toUpperCase();
 
-        await Promise.all([
+        configurarAcessoAprovacoes(perfil.nivel_acesso);
+        iniciarMonitoramentoAprovacoes();
+        // Falhas nos indicadores de estoque/eventos não impedem o aviso de pedidos.
+        const resultados = await Promise.allSettled([
           carregarMateriais(),
-          carregarEventos()
+          carregarEventos(),
+          carregarAprovacoesPendentes()
         ]);
+        if (resultados.some(resultado => resultado.status === "rejected")) {
+          exibirErro("NÃO FOI POSSÍVEL CARREGAR TODOS OS INDICADORES. ATUALIZE A PÁGINA E TENTE NOVAMENTE.");
+          resultados.filter(resultado => resultado.status === "rejected")
+            .forEach(resultado => console.error(resultado.reason));
+        }
       }
 
       catch (erro) {
